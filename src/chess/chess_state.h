@@ -1,19 +1,22 @@
 #include <string>
 #include <array>
+#include <forward_list>
 #include <utility>
 #include "common.h"
 #include "../abstract/game_state.h"
-// Represent moves as string (e2e4)
-class ChessState : public GameState<std::string> {
+class ChessState : public GameState<ChessMove> {
   public:
-    // [0][0] is a8 [7][7] is h1
+    // 0 -> a8, 63 -> h1
     ChessBoard board;
+    MoveMatrix moves;
 
-    static GameState<std::string> * GetInitialState();
-    static ChessMove get_indices_for_move(std::string);
+    static GameState<ChessMove> * GetInitialState();
+    static std::string chess_move_to_squares(ChessMove);
+    static std::string index_to_square(char);
     static void PrintState(ChessState *);
 
-    GameState<std::string> * GetNewState(std::string) override;
+    GameState<ChessMove> * GetNewState(ChessMove) override;
+
     ChessState(){};
     ~ChessState(){};
 };

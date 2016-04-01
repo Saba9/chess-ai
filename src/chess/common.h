@@ -1,28 +1,38 @@
 #pragma once
-typedef std::array<std::array<int, 8>, 8> ChessBoard;
-typedef std::pair<int[2], int[2]> ChessMove;
+typedef std::array<int, 64> ChessBoard;
+typedef std::pair<char, char> ChessMove;
+typedef std::array<std::forward_list<char **>, 64> MoveMatrix;
 
 namespace Player {
-  enum player {
+  enum player : bool {
     WHITE,
     BLACK
   };
 }
 
+namespace attrs {
+  enum attrs : char {
+    BLACK     = 0b100000,
+    SLIDING   = 0b010000,
+    DIAGONAL  = 0b001000,
+    ADJACENT  = 0b000100
+  };
+}
+
 namespace pieces {
-  enum pieces {
-    NONE,
-    W_PAWN,
-    W_KNIGHT,
-    W_BISHOP,
-    W_ROOK,
-    W_QUEEN,
-    W_KING,
-    B_PAWN,
-    B_KNIGHT,
-    B_BISHOP,
-    B_ROOK,
-    B_QUEEN,
-    B_KING
+  enum pieces : char {
+    NONE      = 0b000000,
+    W_PAWN    = 0b000001,
+    W_KNIGHT  = 0b000010,
+    W_BISHOP  = 0b011000,
+    W_ROOK    = 0b010100,
+    W_QUEEN   = 0b011100,
+    W_KING    = 0b000011,
+    B_PAWN    = 0b100001,
+    B_KNIGHT  = 0b100010,
+    B_BISHOP  = 0b111000,
+    B_ROOK    = 0b110100,
+    B_QUEEN   = 0b111100,
+    B_KING    = 0b100011
   };
 }
