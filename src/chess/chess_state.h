@@ -17,7 +17,7 @@ class ChessState : public GameState<ChessMove> {
     static void PrintState(ChessState *);
 
     GameState<ChessMove> * GetNewState(ChessMove) override;
-
+    
     ChessState(){};
     ~ChessState(){};
 };
