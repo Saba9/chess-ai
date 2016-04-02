@@ -1,9 +1,10 @@
 #pragma once
-typedef std::array<int, 64> ChessBoard;
+typedef std::array<char, 64> ChessBoard;
 typedef std::pair<char, char> ChessMove;
-typedef std::array<std::forward_list<char **>, 64> MoveMatrix;
+typedef std::array<std::forward_list<char **>, 32> MoveMatrix;
+typedef std::array<std::forward_list<char *>, 32> ReferenceBoard;
 
-namespace Player {
+namespace player {
   enum player : bool {
     WHITE,
     BLACK

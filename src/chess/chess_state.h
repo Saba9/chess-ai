@@ -11,6 +11,7 @@ class ChessState : public GameState<ChessMove> {
     MoveMatrix moves;
 
     static GameState<ChessMove> * GetInitialState();
+    static GameState<ChessMove> * GetStateFromFEN(std::string);
     static std::string chess_move_to_squares(ChessMove);
     static std::string index_to_square(char);
     static void PrintState(ChessState *);
