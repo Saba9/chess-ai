@@ -1,0 +1,5 @@
+*.swp
+notes.txt
+bin/*
+!bin/.keep
+src/browse.VC.db
