@@ -5,9 +5,12 @@
 
 
 GameState<ChessMove> * ChessState::GetInitialState() {
-  std::string initial_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-  auto cs = GetStateFromFEN(initial_fen);
-  return cs;
+  return GetStateFromFEN(fen::starting);
+}
+
+void ChessState::updateMovesForPiece(char index){
+  auto piece = board[index];
+  //if(piece == pieces::)
 }
 
 // Currently ignoring last for fields. Only accounts for current locations
@@ -26,22 +29,22 @@ GameState<ChessMove> * ChessState::GetStateFromFEN(std::string fen) {
       char piece;
       switch (unassigned_piece_id) {
         case 'p':
-          piece = pieces::W_PAWN;
+          piece = pieces::PAWN;
           break;
         case 'n':
-          piece = pieces::W_KNIGHT;
+          piece = pieces::KNIGHT;
           break;
         case 'b':
-          piece = pieces::W_BISHOP;
+          piece = pieces::BISHOP;
           break;
         case 'r':
-          piece = pieces::W_ROOK;
+          piece = pieces::ROOK;
           break;
         case 'q':
-          piece = pieces::W_QUEEN;
+          piece = pieces::QUEEN;
           break;
         case 'k':
-          piece = pieces::W_KING;
+          piece = pieces::KING;
           break;
         default:
           piece = pieces::NONE;
@@ -57,7 +60,7 @@ GameState<ChessMove> * ChessState::GetStateFromFEN(std::string fen) {
       }
       
       if(std::islower(c))
-        piece |= attrs::BLACK;
+        cs->ownership[board_index] = player::BLACK;
      
       cs->board[board_index] = piece;
       board_index++;
@@ -79,10 +82,12 @@ GameState<ChessMove> * ChessState::GetNewState(ChessMove cm){
 
   auto old_location = cm.first;
   auto new_location = cm.second;
-
+  
   int piece = new_state->board[old_location];
   new_state->board[old_location] = pieces::NONE;
   new_state->board[new_location] = piece;
+  
+  new_state->ownership[new_location] = new_state->ownership[old_location];
 
   return new_state;
 }
@@ -101,12 +106,26 @@ std::string ChessState::index_to_square(char index){
   return square;
 }
 
-void ChessState::PrintState(ChessState * cs){
-  std::cout << "\nCurrent Player: " << cs->current_player << '\n';
-  for(int i=0; i<64; i++){
-    if(i % 8 == 0)
-      std::cout << std::endl;
-    std::cout << std::setw(2) << +cs->board[i] << " ";
+void ChessState::PrintState(ChessState * cs, std::string attrs){
+  std::cout << "\nCurrent Player: " << cs->current_player << "\n\n";
+  
+  for(auto attr : attrs){
+    switch(attr){
+    case 'b':
+      for(int i=0; i<64; i++){
+        if(i % 8 == 0)
+         std::cout << std::endl;
+        std::cout << std::setw(2) << +cs->board[i] << " ";
+      }
+      break;
+    case 'o':
+      for(int i=0; i<64; i++){
+        if(i % 8 ==0)
+          std::cout << std::endl;
+        std::cout << std::setw(2) << cs->ownership[i] << " ";
+      }
+      break;
+    }
+    std::cout << "\n\n";
   }
-  std::cout << std::endl;
 }

@@ -1,3 +1,4 @@
+#pragma once
 #include <string>
 #include <array>
 #include <forward_list>
@@ -8,16 +9,21 @@ class ChessState : public GameState<ChessMove> {
   public:
     // 0 -> a8, 63 -> h1
     ChessBoard board;
-    MoveMatrix moves;
+    PieceTrackers trackers = {{nullptr}};
+    Ownership ownership = {{false}};
+    MoveMatrix possible_moves;
+    MoveMatrix blocked_moves;
 
     static GameState<ChessMove> * GetInitialState();
     static GameState<ChessMove> * GetStateFromFEN(std::string);
     static std::string chess_move_to_squares(ChessMove);
     static std::string index_to_square(char);
-    static void PrintState(ChessState *);
+    static void PrintState(ChessState *, std::string);
 
     GameState<ChessMove> * GetNewState(ChessMove) override;
     
     ChessState(){};
     ~ChessState(){};
+  private:
+    void updateMovesForPiece(char);
 };

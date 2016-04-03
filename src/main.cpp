@@ -6,11 +6,9 @@ int main(){
 
   auto gs = ChessState::GetInitialState();
   ChessState * cs = static_cast<ChessState *>(gs);
-  ChessState::PrintState(cs);
+  ChessState::PrintState(cs, "bo");
   auto ncs = static_cast<ChessState *>(cs->GetNewState(std::make_pair(0,16)));
-  std::cout << ChessState::index_to_square(8);
-  ChessState::PrintState(ncs);
-  
+  ChessState::PrintState(ncs, "bo");
   delete cs;
   delete ncs;
 }
