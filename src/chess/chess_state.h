@@ -2,6 +2,7 @@
 #include <string>
 #include <array>
 #include <forward_list>
+#include <list>
 #include <utility>
 #include "common.h"
 #include "../abstract/game_state.h"
@@ -9,8 +10,8 @@ class ChessState : public GameState<ChessMove> {
   public:
     // 0 -> a8, 63 -> h1
     ChessBoard board;
-    PieceTrackers trackers = {{nullptr}};
-    Ownership ownership = {{false}};
+    PieceTrackers trackers = {};
+    Ownership ownership = {};
     MoveMatrix possible_moves;
     MoveMatrix blocked_moves;
 
@@ -24,6 +25,12 @@ class ChessState : public GameState<ChessMove> {
     
     ChessState(){};
     ~ChessState(){};
+    
   private:
-    void updateMovesForPiece(char);
+    void createMovesForPiece(char);
+    void createMovesForBoard();
+    
+    void addMove(MoveMatrix *, TwoDIndexVector *, PieceTracker *, char);
+    void addBlockedMove(PieceTracker *, char);
+    void addPossibleMove(PieceTracker *, char);
 };

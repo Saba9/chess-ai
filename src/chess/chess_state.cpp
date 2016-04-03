@@ -8,9 +8,44 @@ GameState<ChessMove> * ChessState::GetInitialState() {
   return GetStateFromFEN(fen::starting);
 }
 
-void ChessState::updateMovesForPiece(char index){
-  auto piece = board[index];
-  //if(piece == pieces::)
+void ChessState::createMovesForPiece(char index){
+  char * piece = &board[index];
+  PieceTracker * pt = trackers[index];
+  if(pt == nullptr){
+    pt = new PieceTracker(piece, index);
+  }
+  if(*piece == pieces::PAWN){
+    int delta = ownership[index] == player::WHITE ? deltas::UP : deltas::DOWN;
+    const int move_pos = index + delta;
+    // There's a piece located at delta. Add move to blocked_moves.
+    if(board[move_pos]){
+      addBlockedMove(pt, move_pos);
+    // Square is clear. Add to possible moves.
+    } else {
+      addPossibleMove(pt, move_pos);
+    }
+  }
+  trackers[index] = pt;
+}
+
+void ChessState::createMovesForBoard(){
+  for(int i = 0; i < 64; i++){
+    createMovesForPiece(i);
+  }
+}
+
+void ChessState::addMove(MoveMatrix * mm, TwoDIndexVector * indexes_list, PieceTracker * pt, char move_pos) {
+  (*mm)[move_pos].push_back(pt);
+  int matrix_index = (* mm)[move_pos].size() - 1;
+  indexes_list->push_back(std::make_pair(move_pos, matrix_index));
+}
+
+void ChessState::addBlockedMove(PieceTracker * pt, char index){
+  addMove(&blocked_moves, &(pt->blocked_moves_indexes), pt, index);
+}
+
+void ChessState::addPossibleMove(PieceTracker * pt, char index){
+  addMove(&possible_moves, &(pt->possible_moves_indexes), pt, index);
 }
 
 // Currently ignoring last for fields. Only accounts for current locations
@@ -69,6 +104,7 @@ GameState<ChessMove> * ChessState::GetStateFromFEN(std::string fen) {
       cs->current_player = c == 'w' ? player::WHITE : player::BLACK;
     }
   }
+  cs->createMovesForBoard();
   return cs;
 }
 
@@ -107,17 +143,19 @@ std::string ChessState::index_to_square(char index){
 }
 
 void ChessState::PrintState(ChessState * cs, std::string attrs){
-  std::cout << "\nCurrent Player: " << cs->current_player << "\n\n";
+  std::cout << "\nCurrent Player: " << cs->current_player << "\n";
   
   for(auto attr : attrs){
     switch(attr){
-    case 'b':
+    // Pieces on board
+    case 'p':
       for(int i=0; i<64; i++){
         if(i % 8 == 0)
          std::cout << std::endl;
         std::cout << std::setw(2) << +cs->board[i] << " ";
       }
       break;
+    // Ownership of pieces
     case 'o':
       for(int i=0; i<64; i++){
         if(i % 8 ==0)
@@ -125,7 +163,25 @@ void ChessState::PrintState(ChessState * cs, std::string attrs){
         std::cout << std::setw(2) << cs->ownership[i] << " ";
       }
       break;
+    // Possible move counts
+    case 'P':
+      for(int i = 0; i< 64; i++){
+        if(i % 8 == 0)
+          std::cout << std::endl;
+        std::cout << std::setw(2) << cs->possible_moves[i].size() << " ";
+      }
+      break;
+    // Blocked move counts
+    case 'B':
+      for(int i = 0; i< 64; i++){
+        if(i % 8 == 0)
+          std::cout << std::endl;
+        std::cout << std::setw(2) << cs->blocked_moves[i].size() << " ";
+      }
+      break;
     }
+  
+    
     std::cout << "\n\n";
   }
 }
