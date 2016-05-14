@@ -99,7 +99,7 @@ GameState<ChessMove> * ChessState::GetStateFromFEN(std::string fen) { //{{{
 } // }}}
 
 
-// Takes a move in the format of std::pair<int, int> = {old_index, new_index}
+// Takes a move in the format of std::pair<char, char> = {old_index, new_index}
 // And executes it. Does not check to see if move is legal.
 // i.e. e2e4 moves white center right pawn up to spaces.
 GameState<ChessMove> * ChessState::GetNewState(ChessMove cm){
@@ -120,6 +120,18 @@ GameState<ChessMove> * ChessState::GetNewState(ChessMove cm){
   return new_state;
 }
 
+void ChessState::removeReferencesToDeadTrackers(){
+  struct is_nullptr {
+    bool operator() (const PieceTracker * pt){ return pt == nullptr; }
+  };
+  for(auto & moves_collection : possible_moves){
+    moves_collection.remove_if(is_nullptr());
+  }
+  for(auto & moves_collection : blocked_moves){
+    moves_collection.remove_if(is_nullptr());
+  }
+  // TODO: Delete useless PieceTrackers from trackers...
+}
 /*
 void ChessState:removeReferencesToTracker(PieceTracker * pt){
   for(TwoDIndex index : pt->possible_moves_indexes ){
