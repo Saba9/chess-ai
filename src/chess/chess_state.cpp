@@ -130,17 +130,13 @@ void ChessState::removeReferencesToDeadTrackers(){
   for(auto & moves_collection : blocked_moves){
     moves_collection.remove_if(is_nullptr());
   }
-  // TODO: Delete useless PieceTrackers from trackers...
-}
-/*
-void ChessState:removeReferencesToTracker(PieceTracker * pt){
-  for(TwoDIndex index : pt->possible_moves_indexes ){
-    auto it = possibles_moves[index.first].begin();
-    advance(it, index.second);
-    possible_moves[index.first].erase(it);
-    // Hmm. This is kinda funky. We ruin indexes by doing this. Might want to just nullify it?
+  for(auto & tracker_collection : trackers){
+    auto second_elem_it = ++tracker_collection.begin();
+    auto last_elem_it = tracker_collection.end();
+    // Possible memory leak? Should be deleting pointers? Guess not.
+    tracker_collection.erase(second_elem_it, last_elem_it);
   }
-}*/
+}
 
 std::string ChessState::chess_move_to_squares(ChessMove cm){
   std::string move_name = "";
