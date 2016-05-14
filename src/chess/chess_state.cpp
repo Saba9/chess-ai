@@ -116,8 +116,21 @@ GameState<ChessMove> * ChessState::GetNewState(ChessMove cm){
   // Update ownership info
   new_state->ownership[new_location] = new_state->ownership[old_location];
   // Delete pointers to tracker in possible_moves and blocked_moves.
-
+  
   return new_state;
+}
+
+void ChessState::recalculateMoves(const std::list<PieceTracker *> & trackers){
+  for(auto tracker : trackers){
+    createMovesForPiece(tracker->index);
+  }
+}
+
+void ChessState::recalculateMovesDueToMove(ChessMove cm){
+  recalculateMoves(possible_moves[cm.first]);
+  recalculateMoves(possible_moves[cm.second]);
+  recalculateMoves(blocked_moves[cm.first]);
+  recalculateMoves(blocked_moves[cm.second]);
 }
 
 void ChessState::removeReferencesToDeadTrackers(){

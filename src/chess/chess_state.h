@@ -34,6 +34,8 @@ class ChessState : public GameState<ChessMove> {
     void createMovesForBoard();
 
     void removeReferencesToDeadTrackers();
+    void recalculateMovesDueToMove(ChessMove);
+    void recalculateMoves(const std::list<PieceTracker *> &);
 
     static char potential_moves_for_rook(char);
 };
