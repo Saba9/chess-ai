@@ -5,4 +5,5 @@ struct PieceTracker {
   char index;
   
   PieceTracker(char *, char);
+  ~PieceTracker();
 };

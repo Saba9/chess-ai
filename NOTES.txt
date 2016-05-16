@@ -1,0 +1,4 @@
+May 15, 2016
+- Fixed memory issues (I think). Mostly used valgrind to identify issues. Solved with smart_pointers (C++11). Remember copies of GameState are shallow.
+- Need to implement deep copy later. (After weird index stuff is fixed).
+- For some reason RecalculateMoves is called with index of -88. Probably some weird memory crap. IDK. gdb might help.

@@ -24,18 +24,20 @@ class ChessState : public GameState<ChessMove> {
     static std::string index_to_square(char);
     static void PrintState(ChessState *, std::string);
 
+    ChessState * DeepCopy();
     GameState<ChessMove> * GetNewState(ChessMove) override;
 
+    void RemoveReferencesToDeadTrackers();
+    void CreateMovesForBoard();
+
     ChessState(){};
-    ~ChessState(){};
+    ~ChessState();
 
   private:
-    void createMovesForPiece(char);
-    void createMovesForBoard();
+    void CreateMovesForPiece(char);
 
-    void removeReferencesToDeadTrackers();
-    void recalculateMovesDueToMove(ChessMove);
-    void recalculateMoves(const std::list<PieceTracker *> &);
+    void RecalculateMovesDueToMove(ChessMove);
+    void RecalculateMoves(MoveList);
 
     static char potential_moves_for_rook(char);
 };

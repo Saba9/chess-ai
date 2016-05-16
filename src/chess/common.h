@@ -1,10 +1,12 @@
 #pragma once
 #include "piece_tracker.h"
+#include <memory> // shared pointers
 
 typedef std::array<char, 64> ChessBoard;
 typedef std::pair<char, char> ChessMove;
-typedef std::array<std::list<PieceTracker *>, 64> MoveMatrix;
-typedef std::array<std::list<PieceTracker *>, 64> PieceTrackers;
+typedef std::list<std::shared_ptr<PieceTracker> *> MoveList;
+typedef std::array<MoveList, 64> MoveMatrix;
+typedef std::array<std::list<std::shared_ptr<PieceTracker>>, 64> PieceTrackers;
 typedef std::array<bool, 64> Ownership;
 
 namespace helpers {

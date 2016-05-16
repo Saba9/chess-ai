@@ -3,38 +3,61 @@
 #include <iomanip>
 #include <cctype>
 
+bool do_debug = true;
+void debug(std::string out){
+  if(do_debug)
+    std::cout << out << '\n';
+}
+
+ChessState::~ChessState() {
+  for(auto tracker_collection : trackers){
+    for(auto tracker : tracker_collection){
+      tracker.reset();
+    }
+  }
+}
+
+ChessState * ChessState::DeepCopy(){
+  // Do that deep copy!
+  // TODO: Stub.
+  return new ChessState();
+}
 
 GameState<ChessMove> * ChessState::GetInitialState() {
   return GetStateFromFEN(fen::starting);
 }
 
 // TODO: Test this code. It's incomplete (I think).
-void ChessState::createMovesForPiece(char index){
+void ChessState::CreateMovesForPiece(char index){
+  if(index > 0){
+  std::cout << "CreateMovesForPiece(" << +index << ")\n";
   char * piece = &board[index];
+  if(trackers[index].size() > 0){
+    auto oldpt = trackers[index].front();
+    oldpt = nullptr;
+  }
 
-  PieceTracker * oldpt = trackers[index].front();
-  delete oldpt;
-  oldpt = nullptr;
-
-  auto pt = new PieceTracker(piece, index);
-
+  auto pt = std::make_shared<PieceTracker>(piece, index);
+  std::cout << "pt->index: " << +pt->index << '\n';
   if(*piece == pieces::PAWN){
     int delta = ownership[index] == player::WHITE ? deltas::UP : deltas::DOWN;
     const int move_pos = index + delta;
     // There's a piece located at delta. Add move to blocked_moves.
+    // std::cout << "Piece ahead of pawn: " << +board[move_pos] << '\n';
     if(board[move_pos]){
-      blocked_moves[move_pos].push_back(pt);
+      blocked_moves[move_pos].push_back(&pt);
     // Square is clear. Add to possible moves.
     } else {
-      possible_moves[move_pos].push_back(pt);
+      possible_moves[move_pos].push_back(&pt);
     }
   }
   trackers[index].push_front(pt);
+  }
 }
 
-void ChessState::createMovesForBoard(){
+void ChessState::CreateMovesForBoard(){
   for(int i = 0; i < 64; i++){
-    createMovesForPiece(i);
+    CreateMovesForPiece(i);
   }
 }
 
@@ -94,7 +117,7 @@ GameState<ChessMove> * ChessState::GetStateFromFEN(std::string fen) { //{{{
       cs->current_player = c == 'w' ? player::WHITE : player::BLACK;
     }
   }
-  cs->createMovesForBoard();
+  cs->CreateMovesForBoard();
   return cs;
 } // }}}
 
@@ -115,40 +138,54 @@ GameState<ChessMove> * ChessState::GetNewState(ChessMove cm){
   new_state->board[new_location] = piece;
   // Update ownership info
   new_state->ownership[new_location] = new_state->ownership[old_location];
-  // Delete pointers to tracker in possible_moves and blocked_moves.
-  
+  // Recalculate blocked/possible moves
+  std::cout << "We die here, right?\n";
+  new_state->RecalculateMovesDueToMove(cm);
+  std::cout << "Yup...\n";
   return new_state;
 }
 
-void ChessState::recalculateMoves(const std::list<PieceTracker *> & trackers){
-  for(auto tracker : trackers){
-    createMovesForPiece(tracker->index);
+void ChessState::RecalculateMoves(MoveList trackers){
+  for(auto tracker_ptr : trackers){
+    // Could be made more efficient by overriding createMovesForPieces
+    // in order to take a PieceTracker.
+    std::cout << "In Recalculate moves.." << +(*tracker_ptr)->index << '\n';
+    CreateMovesForPiece((*tracker_ptr)->index);
   }
 }
 
-void ChessState::recalculateMovesDueToMove(ChessMove cm){
-  recalculateMoves(possible_moves[cm.first]);
-  recalculateMoves(possible_moves[cm.second]);
-  recalculateMoves(blocked_moves[cm.first]);
-  recalculateMoves(blocked_moves[cm.second]);
+void ChessState::RecalculateMovesDueToMove(ChessMove cm){
+  RecalculateMoves(possible_moves[cm.first]);
+  RecalculateMoves(possible_moves[cm.second]);
+  RecalculateMoves(blocked_moves[cm.first]);
+  RecalculateMoves(blocked_moves[cm.second]);
 }
 
-void ChessState::removeReferencesToDeadTrackers(){
+void ChessState::RemoveReferencesToDeadTrackers(){
+  std::cout << "Begin RemoveReferencesToDeadTrackers()\n";
   struct is_nullptr {
-    bool operator() (const PieceTracker * pt){ return pt == nullptr; }
+    bool operator() (std::shared_ptr<PieceTracker> *& pt){
+      return *pt == nullptr;
+    }
   };
   for(auto & moves_collection : possible_moves){
+    if(moves_collection.size() > 1)
     moves_collection.remove_if(is_nullptr());
   }
   for(auto & moves_collection : blocked_moves){
     moves_collection.remove_if(is_nullptr());
   }
   for(auto & tracker_collection : trackers){
-    auto second_elem_it = ++tracker_collection.begin();
-    auto last_elem_it = tracker_collection.end();
-    // Possible memory leak? Should be deleting pointers? Guess not.
-    tracker_collection.erase(second_elem_it, last_elem_it);
+    if(tracker_collection.size() > 1){
+      for(auto it = ++tracker_collection.begin(); it != tracker_collection.end(); ++it){
+        it->reset();
+      }
+      auto second_elem_it = ++tracker_collection.begin();
+      auto last_elem_it = tracker_collection.end();
+      tracker_collection.erase(second_elem_it, last_elem_it);
+    }
   }
+  std::cout << "End RemoveReferencesToDeadTrackers()\n";
 }
 
 std::string ChessState::chess_move_to_squares(ChessMove cm){
