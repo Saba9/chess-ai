@@ -29,29 +29,30 @@ GameState<ChessMove> * ChessState::GetInitialState() {
 
 // TODO: Test this code. It's incomplete (I think).
 void ChessState::CreateMovesForPiece(char index){
+  // Shouldn't be necessary anymore...
   if(index > 0){
-  std::cout << "CreateMovesForPiece(" << +index << ")\n";
-  char * piece = &board[index];
-  if(trackers[index].size() > 0){
-    auto oldpt = trackers[index].front();
-    oldpt = nullptr;
-  }
-
-  auto pt = std::make_shared<PieceTracker>(piece, index);
-  std::cout << "pt->index: " << +pt->index << '\n';
-  if(*piece == pieces::PAWN){
-    int delta = ownership[index] == player::WHITE ? deltas::UP : deltas::DOWN;
-    const int move_pos = index + delta;
-    // There's a piece located at delta. Add move to blocked_moves.
-    // std::cout << "Piece ahead of pawn: " << +board[move_pos] << '\n';
-    if(board[move_pos]){
-      blocked_moves[move_pos].push_back(&pt);
-    // Square is clear. Add to possible moves.
-    } else {
-      possible_moves[move_pos].push_back(&pt);
+    std::cout << "CreateMovesForPiece(" << +index << ")\n";
+    char * piece = &board[index];
+    if(trackers[index].size() > 0){
+      auto oldpt = trackers[index].front();
+      oldpt = nullptr;
     }
-  }
-  trackers[index].push_front(pt);
+
+    trackers[index].push_front(std::make_shared<PieceTracker>(piece, index));
+    auto pt = &trackers[index].front();
+
+    if(*piece == pieces::PAWN){
+      int delta = ownership[index] == player::WHITE ? deltas::UP : deltas::DOWN;
+      const int move_pos = index + delta;
+      // There's a piece located at delta. Add move to blocked_moves.
+      // std::cout << "Piece ahead of pawn: " << +board[move_pos] << '\n';
+      if(board[move_pos]){
+        blocked_moves[move_pos].push_back(pt);
+      // Square is clear. Add to possible moves.
+      } else {
+        possible_moves[move_pos].push_back(pt);
+      }
+    }
   }
 }
 
