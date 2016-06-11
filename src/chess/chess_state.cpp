@@ -2,6 +2,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cctype>
+#include <map>
 
 bool do_debug = true;
 void debug(std::string out){
@@ -18,9 +19,38 @@ ChessState::~ChessState() {
 }
 
 ChessState * ChessState::DeepCopy(){
-  // Do that deep copy!
-  // TODO: Stub.
-  return new ChessState();
+  // Shallow copy
+  auto copy = new ChessState(*this);
+  
+  /*
+    Keys set equal to old pointers to piece_trackers
+    values set equal to copy of those piece_trackers
+  */
+  typedef std::shared_ptr<PieceTracker> SharedPieceTracker;
+  std::map<SharedPieceTracker, SharedPieceTracker *> pointer_map; 
+  // Copy trackers and populate pointer_map
+  for(int i = 0; i < trackers.size(); ++i){
+    // Clear stuff...
+    copy->trackers[i].clear();
+    for(auto & tracker : trackers[i]){
+      // Should we be deep copying trackers? Don't think so.
+      auto pt = std::make_shared<PieceTracker>(tracker->piece, tracker->index);
+      copy->trackers[i].push_front(pt);
+      // Ehh this might be wrong...
+      pointer_map[tracker] = &copy->trackers[i].front();
+    }
+  }
+  for(auto & moveset : copy->possible_moves){
+    for(auto & move : moveset){
+      move = pointer_map[*move];
+    }
+  }
+  for(auto & moveset : copy->blocked_moves){
+    for(auto & move : moveset){
+      move = pointer_map[*move];
+    }
+  }
+  return copy;
 }
 
 GameState<ChessMove> * ChessState::GetInitialState() {
