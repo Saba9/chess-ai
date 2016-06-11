@@ -59,29 +59,32 @@ GameState<ChessMove> * ChessState::GetInitialState() {
 
 // TODO: Test this code. It's incomplete (I think).
 void ChessState::CreateMovesForPiece(char index){
-  // Shouldn't be necessary anymore...
-  if(index > 0){
-    std::cout << "CreateMovesForPiece(" << +index << ")\n";
-    char * piece = &board[index];
-    if(trackers[index].size() > 0){
-      auto oldpt = trackers[index].front();
-      oldpt = nullptr;
+  std::cout << "CreateMovesForPiece(" << +index << ")\n";
+  char * piece = &board[index];
+  if(trackers[index].size() > 0){
+    std::cout << "tracker: " << +trackers[index].front()->index << " " << trackers[index].front().get() << '\n';
+    trackers[index].front() = nullptr;
+    std::cout << "# trackers: " << trackers[index].size() << '\n';
+    std::cout << "Are we sane? " << (trackers[index].front() == nullptr ? "YES" : "NO" )<< '\n';
+    //std::cout << "trackers[index]->index = " << trackers[index].front()->index << '\n';
+    for(auto & move : possible_moves[16]){
+      std::cout << "What it equal? "<< +(*move).get() << '\n';
     }
+  }
 
-    trackers[index].push_front(std::make_shared<PieceTracker>(piece, index));
-    auto pt = &trackers[index].front();
+  trackers[index].push_front(std::make_shared<PieceTracker>(piece, index));
+  auto pt = &trackers[index].front();
 
-    if(*piece == pieces::PAWN){
-      int delta = ownership[index] == player::WHITE ? deltas::UP : deltas::DOWN;
-      const int move_pos = index + delta;
-      // There's a piece located at delta. Add move to blocked_moves.
-      // std::cout << "Piece ahead of pawn: " << +board[move_pos] << '\n';
-      if(board[move_pos]){
-        blocked_moves[move_pos].push_back(pt);
-      // Square is clear. Add to possible moves.
-      } else {
-        possible_moves[move_pos].push_back(pt);
-      }
+  if(*piece == pieces::PAWN){
+    int delta = ownership[index] == player::WHITE ? deltas::UP : deltas::DOWN;
+    const int move_pos = index + delta;
+    // There's a piece located at delta. Add move to blocked_moves.
+    // std::cout << "Piece ahead of pawn: " << +board[move_pos] << '\n';
+    if(board[move_pos]){
+      blocked_moves[move_pos].push_back(pt);
+    // Square is clear. Add to possible moves.
+    } else {
+      possible_moves[move_pos].push_back(pt);
     }
   }
 }
@@ -186,16 +189,23 @@ void ChessState::RecalculateMoves(MoveList trackers){
 }
 
 void ChessState::RecalculateMovesDueToMove(ChessMove cm){
+  std::cout << "possible cm.first" << "\n\n";
   RecalculateMoves(possible_moves[cm.first]);
+  std::cout << "possible cm.second" << "\n\n";
   RecalculateMoves(possible_moves[cm.second]);
+  /* Test 
+  std::cout << "blocked cm.first" << "\n\n";
   RecalculateMoves(blocked_moves[cm.first]);
+  std::cout << "blocked cm.second" << "\n\n";
   RecalculateMoves(blocked_moves[cm.second]);
+  */
 }
 
 void ChessState::RemoveReferencesToDeadTrackers(){
   std::cout << "Begin RemoveReferencesToDeadTrackers()\n";
   struct is_nullptr {
     bool operator() (std::shared_ptr<PieceTracker> *& pt){
+      std::cout << "running is_nullptr? " << (*pt == nullptr ? "IT IS" : "NOPE" ) << std::endl;
       return *pt == nullptr;
     }
   };
@@ -284,6 +294,7 @@ void ChessState::PrintState(ChessState * cs, std::string attrs){ // {{{
     switch(attr){
     // Pieces on board
     case 'p':
+      std::cout << "Pieces\n";
       for(int i=0; i<64; i++){
         if(i % 8 == 0)
          std::cout << std::endl;
@@ -292,6 +303,7 @@ void ChessState::PrintState(ChessState * cs, std::string attrs){ // {{{
       break;
     // Ownership of pieces
     case 'o':
+      std::cout << "Ownership\n";
       for(int i=0; i<64; i++){
         if(i % 8 ==0)
           std::cout << std::endl;
@@ -300,6 +312,7 @@ void ChessState::PrintState(ChessState * cs, std::string attrs){ // {{{
       break;
     // Possible move counts
     case 'P':
+      std::cout << "Possible Move Counts\n";
       for(int i = 0; i< 64; i++){
         if(i % 8 == 0)
           std::cout << std::endl;
@@ -308,6 +321,7 @@ void ChessState::PrintState(ChessState * cs, std::string attrs){ // {{{
       break;
     // Blocked move counts
     case 'B':
+      std::cout << "Blocked Move Counts\n";
       for(int i = 0; i< 64; i++){
         if(i % 8 == 0)
           std::cout << std::endl;
