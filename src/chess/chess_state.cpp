@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <cctype>
 #include <map>
+#include <assert.h>
 
 bool do_debug = true;
 void debug(std::string out){
@@ -18,7 +19,9 @@ ChessState::~ChessState() {
   }
 }
 
-ChessState * ChessState::DeepCopy(){
+// Return a pointer to a deepcopy of chessstate.
+// Specifically deep copies trackers, possible_moves, and blocked_moves.
+ChessState * ChessState::DeepCopy(){ // {{{
   // Shallow copy
   auto copy = new ChessState(*this);
   
@@ -51,22 +54,18 @@ ChessState * ChessState::DeepCopy(){
     }
   }
   return copy;
-}
+} // }}}
 
 GameState<ChessMove> * ChessState::GetInitialState() {
   return GetStateFromFEN(fen::starting);
 }
 
 // TODO: Test this code. It's incomplete (I think).
-void ChessState::CreateMovesForPiece(char index){
+void ChessState::CreateMovesForPiece(char index){ // {{{
   std::cout << "CreateMovesForPiece(" << +index << ")\n";
   char * piece = &board[index];
   if(trackers[index].size() > 0){
-    std::cout << "tracker: " << +trackers[index].front()->index << " " << trackers[index].front().get() << '\n';
-    trackers[index].front() = nullptr;
-    std::cout << "# trackers: " << trackers[index].size() << '\n';
-    std::cout << "Are we sane? " << (trackers[index].front() == nullptr ? "YES" : "NO" )<< '\n';
-    //std::cout << "trackers[index]->index = " << trackers[index].front()->index << '\n';
+   // trackers[index].front() = nullptr;
     for(auto & move : possible_moves[16]){
       std::cout << "What it equal? "<< +(*move).get() << '\n';
     }
@@ -159,8 +158,9 @@ GameState<ChessMove> * ChessState::GetStateFromFEN(std::string fen) { //{{{
 // Takes a move in the format of std::pair<char, char> = {old_index, new_index}
 // And executes it. Does not check to see if move is legal.
 // i.e. e2e4 moves white center right pawn up to spaces.
-GameState<ChessMove> * ChessState::GetNewState(ChessMove cm){
-  auto new_state = new ChessState(*this);
+GameState<ChessMove> * ChessState::GetNewState(ChessMove cm){ // {{{
+  //auto new_state = new ChessState(*this);
+  auto new_state = this->DeepCopy();
   new_state->current_player = !new_state->current_player;
 
   auto old_location = cm.first;
@@ -173,22 +173,19 @@ GameState<ChessMove> * ChessState::GetNewState(ChessMove cm){
   // Update ownership info
   new_state->ownership[new_location] = new_state->ownership[old_location];
   // Recalculate blocked/possible moves
-  std::cout << "We die here, right?\n";
   new_state->RecalculateMovesDueToMove(cm);
-  std::cout << "Yup...\n";
   return new_state;
-}
+} // }}}
 
 void ChessState::RecalculateMoves(MoveList trackers){
   for(auto tracker_ptr : trackers){
     // Could be made more efficient by overriding createMovesForPieces
     // in order to take a PieceTracker.
-    std::cout << "In Recalculate moves.." << +(*tracker_ptr)->index << '\n';
     CreateMovesForPiece((*tracker_ptr)->index);
   }
 }
 
-void ChessState::RecalculateMovesDueToMove(ChessMove cm){
+void ChessState::RecalculateMovesDueToMove(ChessMove cm){ // {{{
   std::cout << "possible cm.first" << "\n\n";
   RecalculateMoves(possible_moves[cm.first]);
   std::cout << "possible cm.second" << "\n\n";
@@ -199,9 +196,9 @@ void ChessState::RecalculateMovesDueToMove(ChessMove cm){
   std::cout << "blocked cm.second" << "\n\n";
   RecalculateMoves(blocked_moves[cm.second]);
   */
-}
+} // }}}
 
-void ChessState::RemoveReferencesToDeadTrackers(){
+void ChessState::RemoveReferencesToDeadTrackers(){ // {{{
   std::cout << "Begin RemoveReferencesToDeadTrackers()\n";
   struct is_nullptr {
     bool operator() (std::shared_ptr<PieceTracker> *& pt){
@@ -210,24 +207,21 @@ void ChessState::RemoveReferencesToDeadTrackers(){
     }
   };
   for(auto & moves_collection : possible_moves){
-    if(moves_collection.size() > 1)
     moves_collection.remove_if(is_nullptr());
   }
   for(auto & moves_collection : blocked_moves){
     moves_collection.remove_if(is_nullptr());
   }
   for(auto & tracker_collection : trackers){
-    if(tracker_collection.size() > 1){
-      for(auto it = ++tracker_collection.begin(); it != tracker_collection.end(); ++it){
-        it->reset();
-      }
-      auto second_elem_it = ++tracker_collection.begin();
-      auto last_elem_it = tracker_collection.end();
-      tracker_collection.erase(second_elem_it, last_elem_it);
+    for(auto it = ++tracker_collection.begin(); it != tracker_collection.end(); ++it){
+      it->reset();
     }
+    auto second_elem_it = ++tracker_collection.begin();
+    auto last_elem_it = tracker_collection.end();
+    tracker_collection.erase(second_elem_it, last_elem_it);
   }
   std::cout << "End RemoveReferencesToDeadTrackers()\n";
-}
+} // }}}
 
 std::string ChessState::chess_move_to_squares(ChessMove cm){
   std::string move_name = "";
@@ -243,6 +237,7 @@ std::string ChessState::index_to_square(char index){
   return square;
 }
 
+// TODO: Needs to be tested. Never been executed...
 char potential_moves_for_rook(char index){ // {{{
   char row = index / 8;
   char col = index % 8;

@@ -1,3 +1,7 @@
+June 12, 2016
+- DeepCopy seems to be working. For some reason it looks like the reason why setting the tracker to nullptr would'nt set the possible_moves tracker to nullptr is because the possible_moves nullptr was pointing to another shared pointer. Not sure why. Should figure this out. Using deep copy inside of GetNewState fixes this.
+- Oh... The issue is (I believe) that when we shallow copy a ChessState, copies of the shared_pointers in trackers are made that aren't linked to the pointers in the copied possible_moves and blocked_moves. So, we need to nullify the shared_pointer stored in the trackers array of the ChessState we copied from in order to effect the copied possible_moves and blocked_moves.
+
 May 21, 2016
 - Fixed issue with the call to RecalculateMoves w/ a value of -88. Was pushing address of a pointer to a shared pointer which was promptly destroyed after exiting the function's scope. Now pushing address of pointer to tracker stored in trackers[] instead.
  
