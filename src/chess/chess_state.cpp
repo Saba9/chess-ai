@@ -65,7 +65,7 @@ void ChessState::CreateMovesForPiece(char index){ // {{{
   std::cout << "CreateMovesForPiece(" << +index << ")\n";
   char * piece = &board[index];
   if(trackers[index].size() > 0){
-   // trackers[index].front() = nullptr;
+    trackers[index].front() = nullptr;
     for(auto & move : possible_moves[16]){
       std::cout << "What it equal? "<< +(*move).get() << '\n';
     }
