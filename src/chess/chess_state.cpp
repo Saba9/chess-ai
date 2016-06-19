@@ -155,26 +155,31 @@ GameState<ChessMove> * ChessState::GetStateFromFEN(std::string fen) { //{{{
 } // }}}
 
 
+// Makes a DeepCopy of this, executes ModifyState on it and returns pointer to it.
+GameState<ChessMove> * ChessState::GetNewState(ChessMove cm){ // {{{
+  auto new_state = this->DeepCopy();
+  return new_state->ModifyState(cm);
+} // }}}
+
 // Takes a move in the format of std::pair<char, char> = {old_index, new_index}
 // And executes it. Does not check to see if move is legal.
 // i.e. e2e4 moves white center right pawn up to spaces.
-GameState<ChessMove> * ChessState::GetNewState(ChessMove cm){ // {{{
-  //auto new_state = new ChessState(*this);
-  auto new_state = this->DeepCopy();
-  new_state->current_player = !new_state->current_player;
+GameState<ChessMove> * ChessState::ModifyState(ChessMove cm){ // {{{
+  current_player = !current_player;
 
   auto old_location = cm.first;
   auto new_location = cm.second;
 
   // Move piece on board
-  int piece = new_state->board[old_location];
-  new_state->board[old_location] = pieces::NONE;
-  new_state->board[new_location] = piece;
+  int piece = board[old_location];
+  board[old_location] = pieces::NONE;
+  board[new_location] = piece;
   // Update ownership info
-  new_state->ownership[new_location] = new_state->ownership[old_location];
+  ownership[new_location] = ownership[old_location];
   // Recalculate blocked/possible moves
-  new_state->RecalculateMovesDueToMove(cm);
-  return new_state;
+  RecalculateMovesDueToMove(cm);
+
+  return this;
 } // }}}
 
 void ChessState::RecalculateMoves(MoveList trackers){
@@ -186,16 +191,15 @@ void ChessState::RecalculateMoves(MoveList trackers){
 }
 
 void ChessState::RecalculateMovesDueToMove(ChessMove cm){ // {{{
-  std::cout << "possible cm.first" << "\n\n";
-  RecalculateMoves(possible_moves[cm.first]);
-  std::cout << "possible cm.second" << "\n\n";
-  RecalculateMoves(possible_moves[cm.second]);
-  /* Test 
-  std::cout << "blocked cm.first" << "\n\n";
-  RecalculateMoves(blocked_moves[cm.first]);
-  std::cout << "blocked cm.second" << "\n\n";
-  RecalculateMoves(blocked_moves[cm.second]);
-  */
+  // Copy because RecalculateMoves modifies possible_moves and blocked_moves
+  // so, if we run RecalculateMoves multiple times on possible_moves and
+  // blocked moves we'll end up calculating things multiple times.
+  auto pm_copy = possible_moves;
+  auto bm_copy = blocked_moves;
+  RecalculateMoves(pm_copy[cm.first]);
+  RecalculateMoves(pm_copy[cm.second]);
+  RecalculateMoves(bm_copy[cm.first]);
+  RecalculateMoves(bm_copy[cm.second]);
 } // }}}
 
 void ChessState::RemoveReferencesToDeadTrackers(){ // {{{

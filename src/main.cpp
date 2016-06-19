@@ -17,8 +17,7 @@ int main(){
   std::cout << (*cs->possible_moves[16].front()).get() << '\n';
   */
   std::cout << "GetNewState\n";
-  auto ncs = static_cast<ChessState *>(cs->GetNewState(std::make_pair(0,16)));
-  delete cs;
+  auto ncs = static_cast<ChessState *>(cs->ModifyState(std::make_pair(0,16)));
   std::cout << "Sanity Check v3\n";
   std::cout << "a == b? " << (ncs->trackers[8].back() == *ncs->possible_moves[16].front() ? "YES" : "NO :(") << '\n';
   std::cout << ncs->trackers[8].back().get() << '\n';

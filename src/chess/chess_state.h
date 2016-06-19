@@ -26,6 +26,7 @@ class ChessState : public GameState<ChessMove> {
 
     ChessState * DeepCopy();
     GameState<ChessMove> * GetNewState(ChessMove) override;
+    GameState<ChessMove> * ModifyState(ChessMove) override;
 
     void RemoveReferencesToDeadTrackers();
     void CreateMovesForBoard();
