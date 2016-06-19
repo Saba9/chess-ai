@@ -86,7 +86,7 @@ void ChessState::CreateMovesForPiece(char index){ // {{{
       possible_moves[move_pos].push_back(pt);
     }
   }
-}
+} // }}}
 
 void ChessState::CreateMovesForBoard(){
   for(int i = 0; i < 64; i++){
