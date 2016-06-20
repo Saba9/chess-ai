@@ -1,5 +1,6 @@
 June 16, 2016
 - Fixed issue mentioned one June 12th (2nd bullet) by modifying the ChessState object instead of doing a shallow copy.
+- TODO: Should cleanup includes...
 
 June 12, 2016
 - DeepCopy seems to be working. For some reason it looks like the reason why setting the tracker to nullptr would'nt set the possible_moves tracker to nullptr is because the possible_moves nullptr was pointing to another shared pointer. Not sure why. Should figure this out. Using deep copy inside of GetNewState fixes this.

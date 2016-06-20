@@ -19,7 +19,7 @@ ChessState::~ChessState() {
   }
 }
 
-// Return a pointer to a deepcopy of chessstate.
+// Return a pointer to a deepcopy of the ChessState.
 // Specifically deep copies trackers, possible_moves, and blocked_moves.
 ChessState * ChessState::DeepCopy(){ // {{{
   // Shallow copy
@@ -29,7 +29,6 @@ ChessState * ChessState::DeepCopy(){ // {{{
     Keys set equal to old pointers to piece_trackers
     values set equal to copy of those piece_trackers
   */
-  typedef std::shared_ptr<PieceTracker> SharedPieceTracker;
   std::map<SharedPieceTracker, SharedPieceTracker *> pointer_map; 
   // Copy trackers and populate pointer_map
   for(int i = 0; i < trackers.size(); ++i){
@@ -66,19 +65,24 @@ void ChessState::CreateMovesForPiece(char index){ // {{{
   char * piece = &board[index];
   if(trackers[index].size() > 0){
     trackers[index].front() = nullptr;
-    for(auto & move : possible_moves[16]){
-      std::cout << "What it equal? "<< +(*move).get() << '\n';
-    }
   }
 
   trackers[index].push_front(std::make_shared<PieceTracker>(piece, index));
   auto pt = &trackers[index].front();
 
+  std::vector<char> deltas;
   if(*piece == pieces::PAWN){
-    int delta = ownership[index] == player::WHITE ? deltas::UP : deltas::DOWN;
+    const int delta = ownership[index] == player::WHITE ? deltas::UP : deltas::DOWN;
+    deltas.push_back(delta);
+  }
+  AddPieceTrackerToDeltas(pt, deltas);
+} // }}}
+
+void ChessState::AddPieceTrackerToDeltas(SharedPieceTracker * pt, const std::vector<char> & deltas){
+  const char index = (*pt)->index;
+  for(int delta : deltas){
     const int move_pos = index + delta;
     // There's a piece located at delta. Add move to blocked_moves.
-    // std::cout << "Piece ahead of pawn: " << +board[move_pos] << '\n';
     if(board[move_pos]){
       blocked_moves[move_pos].push_back(pt);
     // Square is clear. Add to possible moves.
@@ -86,7 +90,7 @@ void ChessState::CreateMovesForPiece(char index){ // {{{
       possible_moves[move_pos].push_back(pt);
     }
   }
-} // }}}
+}
 
 void ChessState::CreateMovesForBoard(){
   for(int i = 0; i < 64; i++){
@@ -203,10 +207,8 @@ void ChessState::RecalculateMovesDueToMove(ChessMove cm){ // {{{
 } // }}}
 
 void ChessState::RemoveReferencesToDeadTrackers(){ // {{{
-  std::cout << "Begin RemoveReferencesToDeadTrackers()\n";
   struct is_nullptr {
     bool operator() (std::shared_ptr<PieceTracker> *& pt){
-      std::cout << "running is_nullptr? " << (*pt == nullptr ? "IT IS" : "NOPE" ) << std::endl;
       return *pt == nullptr;
     }
   };

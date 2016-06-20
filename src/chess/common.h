@@ -8,6 +8,7 @@ typedef std::list<std::shared_ptr<PieceTracker> *> MoveList;
 typedef std::array<MoveList, 64> MoveMatrix;
 typedef std::array<std::list<std::shared_ptr<PieceTracker>>, 64> PieceTrackers;
 typedef std::array<bool, 64> Ownership;
+typedef std::shared_ptr<PieceTracker> SharedPieceTracker;
 
 namespace helpers {
   inline void flip_bit(bool * bit){

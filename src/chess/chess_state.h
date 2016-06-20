@@ -36,6 +36,7 @@ class ChessState : public GameState<ChessMove> {
 
   private:
     void CreateMovesForPiece(char);
+    void AddPieceTrackerToDeltas(SharedPieceTracker *, const std::vector<char> &);
 
     void RecalculateMovesDueToMove(ChessMove);
     void RecalculateMoves(MoveList);
