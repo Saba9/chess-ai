@@ -5,12 +5,6 @@
 #include <map>
 #include <assert.h>
 
-bool do_debug = true;
-void debug(std::string out){
-  if(do_debug)
-    std::cout << out << '\n';
-}
-
 ChessState::~ChessState() {
   for(auto tracker_collection : trackers){
     for(auto tracker : tracker_collection){
@@ -78,6 +72,9 @@ void ChessState::CreateMovesForPiece(char index){ // {{{
   AddPieceTrackerToDeltas(pt, deltas);
 } // }}}
 
+// Takes a PieceTracker and a list of move deltas. Adds
+// PieceTracker to either blocked or possible moves for each
+// delta depending on the existence of a piece at delta position.
 void ChessState::AddPieceTrackerToDeltas(SharedPieceTracker * pt, const std::vector<char> & deltas){
   const char index = (*pt)->index;
   for(int delta : deltas){
@@ -92,6 +89,7 @@ void ChessState::AddPieceTrackerToDeltas(SharedPieceTracker * pt, const std::vec
   }
 }
 
+// Calculate moves for every piece on board
 void ChessState::CreateMovesForBoard(){
   for(int i = 0; i < 64; i++){
     CreateMovesForPiece(i);
@@ -186,6 +184,7 @@ GameState<ChessMove> * ChessState::ModifyState(ChessMove cm){ // {{{
   return this;
 } // }}}
 
+// Takes a collection of trackers and recalculates moves for their associated piece.
 void ChessState::RecalculateMoves(MoveList trackers){
   for(auto tracker_ptr : trackers){
     // Could be made more efficient by overriding createMovesForPieces
@@ -194,6 +193,8 @@ void ChessState::RecalculateMoves(MoveList trackers){
   }
 }
 
+// Recalculates possible and blocked moves for pieces effected by
+// the movement of another piece.
 void ChessState::RecalculateMovesDueToMove(ChessMove cm){ // {{{
   // Copy because RecalculateMoves modifies possible_moves and blocked_moves
   // so, if we run RecalculateMoves multiple times on possible_moves and
@@ -206,6 +207,9 @@ void ChessState::RecalculateMovesDueToMove(ChessMove cm){ // {{{
   RecalculateMoves(bm_copy[cm.second]);
 } // }}}
 
+// Removes PieceTracker pointers from possible_moves and blocked_moves
+// if the object they're pointing to is a nulllptr. Also deletes
+// invalidated PieceTrackers from trackers.
 void ChessState::RemoveReferencesToDeadTrackers(){ // {{{
   struct is_nullptr {
     bool operator() (std::shared_ptr<PieceTracker> *& pt){
@@ -229,6 +233,8 @@ void ChessState::RemoveReferencesToDeadTrackers(){ // {{{
   std::cout << "End RemoveReferencesToDeadTrackers()\n";
 } // }}}
 
+// Converts move in ChessMove format to "square" format
+// i.e. {0, 1} -> a8b8
 std::string ChessState::chess_move_to_squares(ChessMove cm){
   std::string move_name = "";
   move_name += index_to_square(cm.first);
@@ -236,6 +242,8 @@ std::string ChessState::chess_move_to_squares(ChessMove cm){
   return move_name;
 }
 
+// Converts chess board index to square
+// i.e. 0 -> a8
 std::string ChessState::index_to_square(char index){
   std::string square = "";
   square += 'a' + index % 8;
@@ -288,6 +296,7 @@ char potential_moves_for_rook(char index){ // {{{
   return moves;
 } // }}}
 
+// Prints some information about chess state depending on attrs passed in.
 void ChessState::PrintState(ChessState * cs, std::string attrs){ // {{{
   std::cout << "\nCurrent Player: " << cs->current_player << "\n";
 
