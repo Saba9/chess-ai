@@ -5,25 +5,25 @@
 #include <map>
 #include <assert.h>
 
-ChessState::~ChessState() {
+ChessState::~ChessState() { // {{{
   for(auto tracker_collection : trackers){
     for(auto tracker : tracker_collection){
       tracker.reset();
     }
   }
-}
+} // }}}
 
 // Return a pointer to a deepcopy of the ChessState.
 // Specifically deep copies trackers, possible_moves, and blocked_moves.
 ChessState * ChessState::DeepCopy(){ // {{{
   // Shallow copy
   auto copy = new ChessState(*this);
-  
+
   /*
     Keys set equal to old pointers to piece_trackers
     values set equal to copy of those piece_trackers
   */
-  std::map<SharedPieceTracker, SharedPieceTracker *> pointer_map; 
+  std::map<SharedPieceTracker, SharedPieceTracker *> pointer_map;
   // Copy trackers and populate pointer_map
   for(int i = 0; i < trackers.size(); ++i){
     // Clear stuff...
@@ -49,9 +49,9 @@ ChessState * ChessState::DeepCopy(){ // {{{
   return copy;
 } // }}}
 
-GameState<ChessMove> * ChessState::GetInitialState() {
+GameState<ChessMove> * ChessState::GetInitialState() { //{{{
   return GetStateFromFEN(fen::starting);
-}
+} // }}}
 
 // TODO: Test this code. It's incomplete (I think).
 void ChessState::CreateMovesForPiece(char index){ // {{{
@@ -75,7 +75,7 @@ void ChessState::CreateMovesForPiece(char index){ // {{{
 // Takes a PieceTracker and a list of move deltas. Adds
 // PieceTracker to either blocked or possible moves for each
 // delta depending on the existence of a piece at delta position.
-void ChessState::AddPieceTrackerToDeltas(SharedPieceTracker * pt, const std::vector<char> & deltas){
+void ChessState::AddPieceTrackerToDeltas(SharedPieceTracker * pt, const std::vector<char> & deltas){ // {{{
   const char index = (*pt)->index;
   for(int delta : deltas){
     const int move_pos = index + delta;
@@ -87,14 +87,14 @@ void ChessState::AddPieceTrackerToDeltas(SharedPieceTracker * pt, const std::vec
       possible_moves[move_pos].push_back(pt);
     }
   }
-}
+} // }}}
 
 // Calculate moves for every piece on board
-void ChessState::CreateMovesForBoard(){
+void ChessState::CreateMovesForBoard(){ // {{{
   for(int i = 0; i < 64; i++){
     CreateMovesForPiece(i);
   }
-}
+} // }}}
 
 // Currently ignoring last four fields. Only accounts for current locations
 // and current turn.
@@ -185,15 +185,15 @@ GameState<ChessMove> * ChessState::ModifyState(ChessMove cm){ // {{{
 } // }}}
 
 // Takes a collection of trackers and recalculates moves for their associated piece.
-void ChessState::RecalculateMoves(MoveList trackers){
+void ChessState::RecalculateMoves(MoveList trackers){ // {{{
   for(auto tracker_ptr : trackers){
     // Could be made more efficient by overriding createMovesForPieces
     // in order to take a PieceTracker.
     CreateMovesForPiece((*tracker_ptr)->index);
   }
-}
+} // }}}
 
-// Recalculates possible and blocked moves for pieces effected by
+// Recalculates possible and blocked moves for pieces affected by
 // the movement of another piece.
 void ChessState::RecalculateMovesDueToMove(ChessMove cm){ // {{{
   // Copy because RecalculateMoves modifies possible_moves and blocked_moves
@@ -235,21 +235,21 @@ void ChessState::RemoveReferencesToDeadTrackers(){ // {{{
 
 // Converts move in ChessMove format to "square" format
 // i.e. {0, 1} -> a8b8
-std::string ChessState::chess_move_to_squares(ChessMove cm){
+std::string ChessState::chess_move_to_squares(ChessMove cm){ // {{{
   std::string move_name = "";
   move_name += index_to_square(cm.first);
   move_name += index_to_square(cm.second);
   return move_name;
-}
+} // }}}
 
 // Converts chess board index to square
 // i.e. 0 -> a8
-std::string ChessState::index_to_square(char index){
+std::string ChessState::index_to_square(char index){ // {{{
   std::string square = "";
   square += 'a' + index % 8;
   square += std::to_string(8 - index / 8);
   return square;
-}
+} // }}}
 
 // TODO: Needs to be tested. Never been executed...
 char potential_moves_for_rook(char index){ // {{{
@@ -292,7 +292,7 @@ char potential_moves_for_rook(char index){ // {{{
     moves &= ~rook_move::L_UP_RIGHT;
     moves &= ~rook_move::L_DOWN_RIGHT;
   }
-  
+
   return moves;
 } // }}}
 
@@ -342,4 +342,4 @@ void ChessState::PrintState(ChessState * cs, std::string attrs){ // {{{
 
     std::cout << "\n\n";
   }
-} // }}}
+}// }}}

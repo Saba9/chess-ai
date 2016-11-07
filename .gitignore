@@ -4,3 +4,5 @@ bin/*
 !bin/.keep
 src/browse.VC.db
 .vscode/*
+
+build/*

@@ -1,3 +1,0 @@
-Chess::GetLegalMoves(GameState<M>){
-  
-}
