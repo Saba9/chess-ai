@@ -6,3 +6,4 @@ src/browse.VC.db
 .vscode/*
 
 build/*
+!build/.keep
