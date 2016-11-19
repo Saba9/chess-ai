@@ -9,6 +9,8 @@
 class ChessState : public GameState<ChessMove> {
   public:
     // TODO: Change most of these from public to private.
+    const static int NUM_SQUARES = 64;
+
     // 0 -> a8, 63 -> h1
     ChessBoard board;
     PieceTrackers trackers = {};

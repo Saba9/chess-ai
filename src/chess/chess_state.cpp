@@ -91,7 +91,7 @@ void ChessState::AddPieceTrackerToDeltas(SharedPieceTracker * pt, const std::vec
 
 // Calculate moves for every piece on board
 void ChessState::CreateMovesForBoard(){ // {{{
-  for(int i = 0; i < 64; i++){
+  for(int i = 0; i < NUM_SQUARES; i++){
     CreateMovesForPiece(i);
   }
 } // }}}
@@ -305,7 +305,7 @@ void ChessState::PrintState(ChessState * cs, std::string attrs){ // {{{
     // Pieces on board
     case 'p':
       std::cout << "Pieces\n";
-      for(int i=0; i<64; i++){
+      for(int i=0; i<NUM_SQUARES; i++){
         if(i % 8 == 0)
          std::cout << std::endl;
         std::cout << std::setw(2) << +cs->board[i] << " ";
@@ -314,7 +314,7 @@ void ChessState::PrintState(ChessState * cs, std::string attrs){ // {{{
     // Ownership of pieces
     case 'o':
       std::cout << "Ownership\n";
-      for(int i=0; i<64; i++){
+      for(int i=0; i<NUM_SQUARES; i++){
         if(i % 8 ==0)
           std::cout << std::endl;
         std::cout << std::setw(2) << cs->ownership[i] << " ";
@@ -323,7 +323,7 @@ void ChessState::PrintState(ChessState * cs, std::string attrs){ // {{{
     // Possible move counts
     case 'P':
       std::cout << "Possible Move Counts\n";
-      for(int i = 0; i< 64; i++){
+      for(int i = 0; i< NUM_SQUARES; i++){
         if(i % 8 == 0)
           std::cout << std::endl;
         std::cout << std::setw(2) << cs->possible_moves[i].size() << " ";
@@ -332,7 +332,7 @@ void ChessState::PrintState(ChessState * cs, std::string attrs){ // {{{
     // Blocked move counts
     case 'B':
       std::cout << "Blocked Move Counts\n";
-      for(int i = 0; i< 64; i++){
+      for(int i = 0; i< NUM_SQUARES; i++){
         if(i % 8 == 0)
           std::cout << std::endl;
         std::cout << std::setw(2) << cs->blocked_moves[i].size() << " ";
