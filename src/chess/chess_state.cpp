@@ -84,16 +84,18 @@ void ChessState::CreateMovesForPiece(char index){ // {{{
 void ChessState::AddDeltaRange(std::vector<char> & deltas, int index, int delta, int rowBound, int colBound){ // {{{
   char piece = board[index];
   bool isSliding = (piece & attrs::SLIDING) == attrs::SLIDING;
+  std::cout << "Sliding? " << isSliding << '\n';
 
   for(int deltaTotal = delta;
       (index + deltaTotal) % 8 != rowBound                   // Ensure we stay within row boundary.
       && (index + deltaTotal) / 8 != colBound                // Ensure we stay within col boundary.
       && (isSliding || index + deltaTotal == index + delta); // Continue running if piece slides. If not run once.
-      index += delta
+      deltaTotal += delta
   ){
     deltas.push_back(deltaTotal);
     // Stop adding to deltas if we run into a piece on the board.
-    if(board[index] != pieces::NONE){
+    if(board[index + deltaTotal] != pieces::NONE){
+      std::cout << "BREAK!!! " << +board[index + deltaTotal] << '\n';
       break;
     }
   }

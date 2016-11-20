@@ -1,3 +1,7 @@
+Nov 19, 2016
+- Got adjacent move tracking to kinda work when going to the right. Seems like there's something wrong w/ sliding
+  - Fixed the issue. We were incrementing index instead of delta and also checking board[index] instead of board[index + deltaTotal]
+
 June 16, 2016
 - Fixed issue mentioned one June 12th (2nd bullet) by modifying the ChessState object instead of doing a shallow copy.
 - TODO: Should cleanup includes...
