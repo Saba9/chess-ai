@@ -74,7 +74,7 @@ void ChessState::CreateMovesForPiece(char index){ // {{{
       // Stub
     }
     if ((*piece & attrs::ADJACENT) == attrs::ADJACENT){
-      AddDeltaRange(deltas, index, deltas::RIGHT, 7, -1);
+      AddDeltaRange(deltas, index, deltas::RIGHT, 0, -1);
     }
   }
   AddPieceTrackerToDeltas(pt, deltas);
@@ -85,10 +85,10 @@ void ChessState::AddDeltaRange(std::vector<char> & deltas, int index, int delta,
   char piece = board[index];
   bool isSliding = (piece & attrs::SLIDING) == attrs::SLIDING;
 
-  for(int deltaTotal = 0;
-      (index + deltaTotal) % 8 != rowBound           // Ensure we stay within row boundary.
-      && (index + deltaTotal) / 8 != colBound        // Ensure we stay within col boundary.
-      && (isSliding || index + deltaTotal == index); // Continue running if piece slides. If not run once.
+  for(int deltaTotal = delta;
+      (index + deltaTotal) % 8 != rowBound                   // Ensure we stay within row boundary.
+      && (index + deltaTotal) / 8 != colBound                // Ensure we stay within col boundary.
+      && (isSliding || index + deltaTotal == index + delta); // Continue running if piece slides. If not run once.
       index += delta
   ){
     deltas.push_back(deltaTotal);

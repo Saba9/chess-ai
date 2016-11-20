@@ -9,6 +9,7 @@ int main(){
   std::cout << "PrintState #1\n";
   ChessState::PrintState(cs, "poPB");
 
+  /**
   auto ncs = static_cast<ChessState *>(cs->ModifyState(std::make_pair(0,16)));
 
   ncs->RemoveReferencesToDeadTrackers();
@@ -18,4 +19,5 @@ int main(){
 
   std::cout << "Done doing stuff...\n";
   delete ncs;
+  */
 }
