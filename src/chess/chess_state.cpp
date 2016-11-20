@@ -4,6 +4,7 @@
 #include <cctype>
 #include <map>
 #include <assert.h>
+#include <bitset>
 
 ChessState::~ChessState() { // {{{
   for(auto tracker_collection : trackers){
@@ -68,8 +69,34 @@ void ChessState::CreateMovesForPiece(char index){ // {{{
   if(*piece == pieces::PAWN){
     const int delta = ownership[index] == player::WHITE ? deltas::UP : deltas::DOWN;
     deltas.push_back(delta);
+  } else {
+    if ((*piece & attrs::DIAGONAL) == attrs::DIAGONAL){
+      // Stub
+    }
+    if ((*piece & attrs::ADJACENT) == attrs::ADJACENT){
+      AddDeltaRange(deltas, index, deltas::RIGHT, 7, -1);
+    }
   }
   AddPieceTrackerToDeltas(pt, deltas);
+} // }}}
+
+// TODO: test.
+void ChessState::AddDeltaRange(std::vector<char> & deltas, int index, int delta, int rowBound, int colBound){ // {{{
+  char piece = board[index];
+  bool isSliding = (piece & attrs::SLIDING) == attrs::SLIDING;
+
+  for(int deltaTotal = 0;
+      (index + deltaTotal) % 8 != rowBound           // Ensure we stay within row boundary.
+      && (index + deltaTotal) / 8 != colBound        // Ensure we stay within col boundary.
+      && (isSliding || index + deltaTotal == index); // Continue running if piece slides. If not run once.
+      index += delta
+  ){
+    deltas.push_back(deltaTotal);
+    // Stop adding to deltas if we run into a piece on the board.
+    if(board[index] != pieces::NONE){
+      break;
+    }
+  }
 } // }}}
 
 // Takes a PieceTracker and a list of move deltas. Adds

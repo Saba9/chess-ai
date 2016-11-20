@@ -80,6 +80,6 @@ namespace pieces {
     BISHOP  = 0b11000,
     ROOK    = 0b10100,
     QUEEN   = 0b11100,
-    KING    = 0b00011
+    KING    = 0b01100
   };
 }

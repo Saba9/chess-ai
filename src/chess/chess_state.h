@@ -33,6 +33,8 @@ class ChessState : public GameState<ChessMove> {
     void RemoveReferencesToDeadTrackers();
     void CreateMovesForBoard();
 
+    void AddDeltaRange(std::vector<char> &, int, int, int, int);
+
     ChessState(){};
     ~ChessState();
 
