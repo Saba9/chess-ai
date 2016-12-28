@@ -56,7 +56,7 @@ GameState<ChessMove> * ChessState::GetInitialState() { //{{{
 
 // TODO: Test this code. It's incomplete (I think).
 void ChessState::CreateMovesForPiece(char index){ // {{{
-  std::cout << "CreateMovesForPiece(" << +index << ")\n";
+  // std::cout << "CreateMovesForPiece(" << +index << ")\n";
   char * piece = &board[index];
   if(trackers[index].size() > 0){
     trackers[index].front() = nullptr;
@@ -71,7 +71,11 @@ void ChessState::CreateMovesForPiece(char index){ // {{{
     deltas.push_back(delta);
   } else {
     if ((*piece & attrs::DIAGONAL) == attrs::DIAGONAL){
-      // Stub
+      // TODO: Test this...
+      AddDeltaRange(deltas, index, deltas::D_UP_RIGHT  , 0, 0);
+      AddDeltaRange(deltas, index, deltas::D_UP_LEFT   , 7, 0);
+      AddDeltaRange(deltas, index, deltas::D_DOWN_RIGHT, 0, 7);
+      AddDeltaRange(deltas, index, deltas::D_DOWN_LEFT , 7, 7);
     }
     if ((*piece & attrs::ADJACENT) == attrs::ADJACENT){
       AddDeltaRange(deltas, index, deltas::RIGHT,  0, -1);
