@@ -24,5 +24,4 @@ int main(){
 
   std::cout << "Done doing stuff...\n";
   delete ncs;
-
 }

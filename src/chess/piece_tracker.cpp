@@ -5,6 +5,3 @@ PieceTracker::PieceTracker(char * piece, char index){
   this->piece = piece;
   this->index = index;
 }
-
-PieceTracker::~PieceTracker(){
-}

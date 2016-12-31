@@ -15,17 +15,56 @@ TEST(ChessState, GetInitialStateInitializesBoardCorrectly){
       int i = row * ChessState::ROW_SIZE + col;
       switch(row) {
         case 0: case 7:
-          EXPECT_EQ(cs->board[i], royal_row[i % ChessState::COL_SIZE]);
-          break;
+          EXPECT_EQ(cs->board[i], royal_row[i % ChessState::COL_SIZE]); break;
         case 1: case 6:
-          EXPECT_EQ(cs->board[i], PAWN);
-          break;
+          EXPECT_EQ(cs->board[i], PAWN); break;
         case 2: case 3: case 4: case 5:
-          EXPECT_EQ(cs->board[i], NONE);
-          break;
+          EXPECT_EQ(cs->board[i], NONE); break;
         default:
           FAIL() << "We shouldn't be here.";
       }
+    }
+  }
+}
+
+TEST(ChessState, DeepCopyReplicatesDataCorrectly){
+  auto cs_o = static_cast<ChessState *>(ChessState::GetInitialState());
+  auto cs_c = cs_o->DeepCopy();
+
+  /**
+   * Ensure that all entries in `trackers` array equal each other but
+   * do not point to the same spot in memory.
+   */
+  for(int i = 0; i < ChessState::NUM_SQUARES; i++){
+    ASSERT_EQ(cs_o->trackers[i].size(), cs_c->trackers[i].size());
+    auto it_pt_o = cs_o->trackers[i].begin();
+    auto it_pt_c = cs_c->trackers[i].begin();
+    for(; it_pt_o != cs_o->trackers[i].end(); it_pt_o++, it_pt_c++){
+      EXPECT_EQ(**it_pt_o, **it_pt_c);
+      EXPECT_NE(*it_pt_o, *it_pt_c);
+    }
+  }
+  /**
+   * Check to see if possible_moves and blocked_moves have the
+   * same entries in both objects but do not point to the same
+   * spots in memory.
+   */
+  for(int i = 0; i < ChessState::NUM_SQUARES; i++){
+    ASSERT_EQ(cs_o->possible_moves[i].size(), cs_c->possible_moves[i].size());
+    auto it_pt_o = cs_o->possible_moves[i].begin();
+    auto it_pt_c = cs_c->possible_moves[i].begin();
+    for(; it_pt_o != cs_o->possible_moves[i].end(); it_pt_o++, it_pt_c++){
+      EXPECT_EQ(***it_pt_o, ***it_pt_c); 
+      EXPECT_NE(**it_pt_o, **it_pt_c);
+    }
+  }
+  for(int i = 0; i < ChessState::NUM_SQUARES; i++){
+    ASSERT_EQ(cs_o->blocked_moves[i].size(), cs_c->blocked_moves[i].size());
+    auto it_pt_o = cs_o->blocked_moves[i].begin();
+    auto it_pt_c = cs_c->blocked_moves[i].begin();
+    for(; it_pt_o != cs_o->blocked_moves[i].end(); it_pt_o++, it_pt_c++){
+      EXPECT_EQ(***it_pt_o, ***it_pt_c); 
+      EXPECT_NE(**it_pt_o, **it_pt_c);
     }
   }
 }

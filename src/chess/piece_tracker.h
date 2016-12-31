@@ -5,5 +5,8 @@ struct PieceTracker {
   char index;
   
   PieceTracker(char *, char);
-  ~PieceTracker();
+
+  bool operator==(const PieceTracker & rhs) const {
+    return *piece == *rhs.piece && index == rhs.index;
+  }
 };
