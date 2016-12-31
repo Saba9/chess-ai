@@ -103,7 +103,6 @@ void ChessState::CreateMovesForPiece(char index){ // {{{
   CreateMovesForPiece(index, 0b11111);
 } // }}}
 
-// TODO: test.
 void ChessState::AddDeltaRange(std::vector<char> & deltas, int index, int delta, int colBound, int rowBound){ // {{{
   char piece = board[index];
   bool isSliding = (piece & attrs::SLIDING) == attrs::SLIDING;
@@ -214,61 +213,6 @@ ChessState * ChessState::ParseFEN(std::string fen){ // {{{
       cs->current_player = c == 'w' ? player::WHITE : player::BLACK;
     }
   }
-/*{{{
-  ChessState * cs  = new ChessState();
-  char current_field = 1;
-  char piece_num     = 0;
-  for(char &c : fen) {
-    if(c == ' ') {
-      current_field++;
-      continue;
-    // Pieces
-    } else if(current_field == 1) {
-      char unassigned_piece_id = std::tolower(c);
-      char piece;
-      switch (unassigned_piece_id) {
-        case 'p':
-          piece = pieces::PAWN;
-          break;
-        case 'n':
-          piece = pieces::KNIGHT;
-          break;
-        case 'b':
-          piece = pieces::BISHOP;
-          break;
-        case 'r':
-          piece = pieces::ROOK;
-          break;
-        case 'q':
-          piece = pieces::QUEEN;
-          break;
-        case 'k':
-          piece = pieces::KING;
-          break;
-        default:
-          piece = pieces::NONE;
-          if(c == '/'){
-            continue;
-          } else if(std::isdigit(c)){
-            for(int i=0; i< c-'0'; i++){
-              cs->board[8 * (piece_num / 8) + 7 - (piece_num % 8)] = pieces::NONE;
-              piece_num++;
-            }
-            continue;
-          }
-      }
-      char board_index = 8 * (piece_num / 8) + 7 - (piece_num % 8);
-      if(std::islower(c))
-        cs->ownership[board_index] = player::BLACK;
-
-      cs->board[board_index] = piece;
-      piece_num++;
-    // Current player
-    } else if(current_field == 2) {
-      cs->current_player = c == 'w' ? player::WHITE : player::BLACK;
-    }
-  }
-}}}*/
   return cs;
 } // }}}
 
