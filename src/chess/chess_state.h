@@ -24,8 +24,11 @@ class ChessState : public GameState<ChessMove> {
 
     static GameState<ChessMove> * GetInitialState();
     static GameState<ChessMove> * GetStateFromFEN(std::string);
+    static ChessState * ParseFEN(std::string);
+
     static std::string chess_move_to_squares(ChessMove);
     static std::string index_to_square(char);
+
     static void PrintState(ChessState *, std::string);
 
     ChessState * DeepCopy();
@@ -33,6 +36,8 @@ class ChessState : public GameState<ChessMove> {
     GameState<ChessMove> * ModifyState(ChessMove) override;
 
     void RemoveReferencesToDeadTrackers();
+
+    void CreateMovesForBoard(char);
     void CreateMovesForBoard();
 
     void AddDeltaRange(std::vector<char> &, int, int, int, int);
@@ -41,7 +46,9 @@ class ChessState : public GameState<ChessMove> {
     ~ChessState();
 
   private:
+    void CreateMovesForPiece(char, char);
     void CreateMovesForPiece(char);
+
     void AddPieceTrackerToDeltas(SharedPieceTracker *, const std::vector<char> &);
 
     void RecalculateMovesDueToMove(ChessMove);

@@ -55,7 +55,7 @@ GameState<ChessMove> * ChessState::GetInitialState() { //{{{
 } // }}}
 
 // TODO: Test this code. It's incomplete (I think).
-void ChessState::CreateMovesForPiece(char index){ // {{{
+void ChessState::CreateMovesForPiece(char index, char types){ // {{{
   // std::cout << "CreateMovesForPiece(" << +index << ")\n";
   char * piece = &board[index];
   if(trackers[index].size() > 0){
@@ -66,18 +66,24 @@ void ChessState::CreateMovesForPiece(char index){ // {{{
   auto pt = &trackers[index].front();
 
   std::vector<char> deltas;
-  if(*piece == pieces::PAWN){
+  if(*piece == pieces::PAWN 
+     && (types & pieces::PAWN) == pieces::PAWN
+  ){
     const int delta = ownership[index] == player::WHITE ? deltas::UP : deltas::DOWN;
     deltas.push_back(delta);
   } else {
-    if ((*piece & attrs::DIAGONAL) == attrs::DIAGONAL){
+    if(   (*piece & attrs::DIAGONAL) == attrs::DIAGONAL 
+       && (types & attrs::DIAGONAL ) == attrs::DIAGONAL
+    ){
       // TODO: Test this...
       AddDeltaRange(deltas, index, deltas::D_UP_RIGHT  , 0, 0);
       AddDeltaRange(deltas, index, deltas::D_UP_LEFT   , 7, 0);
       AddDeltaRange(deltas, index, deltas::D_DOWN_RIGHT, 0, 7);
       AddDeltaRange(deltas, index, deltas::D_DOWN_LEFT , 7, 7);
     }
-    if ((*piece & attrs::ADJACENT) == attrs::ADJACENT){
+    if(   (*piece & attrs::ADJACENT) == attrs::ADJACENT
+       && (types & attrs::ADJACENT ) == attrs::ADJACENT
+    ){
       AddDeltaRange(deltas, index, deltas::RIGHT,  0, -1);
       AddDeltaRange(deltas, index, deltas::LEFT ,  7, -1);
       AddDeltaRange(deltas, index, deltas::UP   , -1,  0);
@@ -85,6 +91,10 @@ void ChessState::CreateMovesForPiece(char index){ // {{{
     }
   }
   AddPieceTrackerToDeltas(pt, deltas);
+} // }}}
+
+void ChessState::CreateMovesForPiece(char index){ // {{{
+  CreateMovesForPiece(index, 0b11111);
 } // }}}
 
 // TODO: test.
@@ -127,15 +137,25 @@ void ChessState::AddPieceTrackerToDeltas(SharedPieceTracker * pt, const std::vec
 
 // Calculate moves for every piece on board
 void ChessState::CreateMovesForBoard(){ // {{{
-  for(int i = 0; i < NUM_SQUARES; i++){
-    CreateMovesForPiece(i);
-  }
+  CreateMovesForBoard(0b11111);
 } // }}}
+
+void ChessState::CreateMovesForBoard(char moveTypes){
+  for(int i = 0; i < NUM_SQUARES; i++){
+    CreateMovesForPiece(i, moveTypes);
+  }
+}
 
 // Currently ignoring last four fields. Only accounts for current locations
 // and current turn.
 GameState<ChessMove> * ChessState::GetStateFromFEN(std::string fen) { //{{{
   // TODO: Refactor to make inner for loop unnecessary. Recursion?
+  auto cs = ParseFEN(fen);
+  cs->CreateMovesForBoard();
+  return cs;
+} // }}}
+
+ChessState * ChessState::ParseFEN(std::string fen){ // {{{
   ChessState * cs  = new ChessState();
   char current_field = 1;
   char piece_num     = 0;
@@ -189,10 +209,8 @@ GameState<ChessMove> * ChessState::GetStateFromFEN(std::string fen) { //{{{
       cs->current_player = c == 'w' ? player::WHITE : player::BLACK;
     }
   }
-  cs->CreateMovesForBoard();
   return cs;
 } // }}}
-
 
 // Makes a DeepCopy of this, executes ModifyState on it and returns pointer to it.
 GameState<ChessMove> * ChessState::GetNewState(ChessMove cm){ // {{{

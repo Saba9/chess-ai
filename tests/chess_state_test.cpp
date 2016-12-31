@@ -2,7 +2,11 @@
 #include "../lib/googletest/googletest/include/gtest/gtest.h"
 #include "../src/chess/chess_state.h"
 
-TEST(ChessState, GetInitialStateInitializesBoardCorrectly){
+/**
+ * Ensures the ChessState::GetInitialState initializes board with
+ * all the pieces in the correct order.
+ */
+TEST(ChessState, GetInitialStateInitializesBoardCorrectly){ //{{{
   auto cs = static_cast<ChessState *>(ChessState::GetInitialState());
 
   using namespace pieces;
@@ -25,9 +29,9 @@ TEST(ChessState, GetInitialStateInitializesBoardCorrectly){
       }
     }
   }
-}
+} //}}}
 
-TEST(ChessState, DeepCopyReplicatesDataCorrectly){
+TEST(ChessState, DeepCopyReplicatesDataCorrectly){ //{{{
   auto cs_o = static_cast<ChessState *>(ChessState::GetInitialState());
   auto cs_c = cs_o->DeepCopy();
 
@@ -45,7 +49,7 @@ TEST(ChessState, DeepCopyReplicatesDataCorrectly){
     }
   }
   /**
-   * Check to see if possible_moves and blocked_moves have the
+   * Check to see if `possible_moves` and `blocked_moves` have the
    * same entries in both objects but do not point to the same
    * spots in memory.
    */
@@ -67,4 +71,63 @@ TEST(ChessState, DeepCopyReplicatesDataCorrectly){
       EXPECT_NE(**it_pt_o, **it_pt_c);
     }
   }
-}
+} //}}}
+ 
+TEST(ChessState, PossibleMovesCorrectInInitialStateForPawns){ //{{{
+  auto cs = ChessState::ParseFEN(fen::starting);
+  cs->CreateMovesForBoard(pieces::PAWN);
+  for(int i = 0; i < ChessState::NUM_SQUARES; i++){
+    int row = i / 8;
+    switch(row) {
+      case 0: case 1: case 3: case 4: case 6: case 7:
+        EXPECT_EQ(cs->possible_moves[i].size(), 0); break;
+      case 2: case 5:
+        EXPECT_EQ(cs->possible_moves[i].size(), 1); break;
+      default:
+        FAIL() << "We shouldn't be here.";
+    }
+  }
+} //}}}
+
+TEST(ChessState, BlockedMovesCorrectInInitialStateForAdjacents){ //{{{
+   auto cs = ChessState::ParseFEN(fen::starting);
+   cs->CreateMovesForBoard(attrs::ADJACENT);
+
+   int royal_row_counts[] = {0, 1, 1, 1, 1, 1, 1, 0};
+   int pawn_row_counts[]  = {1, 0, 0, 1, 1, 0, 0, 1};
+  
+   for(int i = 0; i < ChessState::NUM_SQUARES; i++){
+     int row = i / 8;
+     int col = i % 8;
+     switch(row) {
+       case 0: case 7:
+         EXPECT_EQ(cs->blocked_moves[i].size(), royal_row_counts[col]); break;
+       case 1: case 6:
+         EXPECT_EQ(cs->blocked_moves[i].size(), pawn_row_counts[col]);  break;
+       case 2: case 3: case 4: case 5:
+         EXPECT_EQ(cs->blocked_moves[i].size(), 0);                     break;
+       DEFAULT:
+         FAIL() << "We shouldn't be here.";
+     }
+   }
+}//}}}
+
+TEST(ChessState, BlockedMovesCorrectInInitialStateForDiagonals){ //{{{
+   auto cs = ChessState::ParseFEN(fen::starting);
+   cs->CreateMovesForBoard(attrs::DIAGONAL);
+
+   int pawn_row_counts[]  = {0, 1, 1, 2, 2, 1, 1, 0};
+  
+   for(int i = 0; i < ChessState::NUM_SQUARES; i++){
+     int row = i / 8;
+     int col = i % 8;
+     switch(row) {
+       case 1: case 6:
+         EXPECT_EQ(cs->blocked_moves[i].size(), pawn_row_counts[col]);  break;
+       case 0: case 2: case 3: case 4: case 5: case 7:
+         EXPECT_EQ(cs->blocked_moves[i].size(), 0);                     break;
+       DEFAULT:
+         FAIL() << "We shouldn't be here.";
+     }
+   }
+}///}}}
