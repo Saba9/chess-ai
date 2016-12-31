@@ -1,3 +1,9 @@
+Dec 31, 2016 (not at 1AM)
+- Added additional tests for move generation. Had to fix issues with both fen parsing and the row
+  bounds I was passing into AddDeltaRange.
+- TODO: Get possible moves loaded for attacks. These should have one entry in both blocked and
+  possible moves, currently only have one in blocked moves.
+
 Dec 31, 2016
 - Added more tests to chess_state_test.cpp. All in all we now test our initial population of pieces
   on the board, the functionality of ChessState::DeepCopy, and the number of entries in

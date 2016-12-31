@@ -11,7 +11,7 @@ TEST(ChessState, GetInitialStateInitializesBoardCorrectly){ //{{{
 
   using namespace pieces;
   char royal_row[] = {
-    ROOK, KNIGHT, BISHOP, KING, QUEEN, BISHOP, KNIGHT, ROOK
+    ROOK, KNIGHT, BISHOP, QUEEN, KING, BISHOP, KNIGHT, ROOK
   };
 
   for(int row = 0; row < ChessState::ROW_SIZE; row++){
@@ -73,7 +73,7 @@ TEST(ChessState, DeepCopyReplicatesDataCorrectly){ //{{{
   }
 } //}}}
  
-TEST(ChessState, PossibleMovesCorrectInInitialStateForPawns){ //{{{
+TEST(ChessState, PossibleMovesCorrectInInitialStateForPawns){ //{{{ 
   auto cs = ChessState::ParseFEN(fen::starting);
   cs->CreateMovesForBoard(pieces::PAWN);
   for(int i = 0; i < ChessState::NUM_SQUARES; i++){
@@ -122,6 +122,7 @@ TEST(ChessState, BlockedMovesCorrectInInitialStateForDiagonals){ //{{{
      int row = i / 8;
      int col = i % 8;
      switch(row) {
+  ChessState::PrintState(cs, "pP");
        case 1: case 6:
          EXPECT_EQ(cs->blocked_moves[i].size(), pawn_row_counts[col]);  break;
        case 0: case 2: case 3: case 4: case 5: case 7:
@@ -131,3 +132,62 @@ TEST(ChessState, BlockedMovesCorrectInInitialStateForDiagonals){ //{{{
      }
    }
 }///}}}
+
+TEST(ChessState, MovesCalculatedCorrectlyForLoneQueen){
+  const std::string test_board = "8/8/2Q5/8/8/8/8/8 w KQkq - 0 1";
+  int possible_moves_counts[8][8] = {
+    {1, 0, 1, 0, 1, 0, 0, 0},
+    {0, 1, 1, 1, 0, 0, 0, 0},
+    {1, 1, 0, 1, 1, 1, 1, 1},
+    {0, 1, 1, 1, 0, 0, 0, 0},
+    {1, 0, 1, 0, 1, 0, 0, 0},
+    {0, 0, 1, 0, 0, 1, 0, 0},
+    {0, 0, 1, 0, 0, 0, 1, 0},
+    {0, 0, 1, 0, 0, 0, 0, 1}
+  };
+
+  auto cs = ChessState::ParseFEN(test_board);
+  cs->CreateMovesForBoard();
+
+  for(int i = 0; i < ChessState::NUM_SQUARES; i++){
+    int row = i / 8;
+    int col = i % 8;
+    EXPECT_EQ(cs->possible_moves[i].size(), possible_moves_counts[row][col]);
+    EXPECT_EQ(cs->blocked_moves[i].size(), 0);
+  }
+}
+
+TEST(ChessState, MovesCalculatedCorrectlyWhenBlocked){
+  const std::string test_board = "8/1K6/8/3R1P2/8/5Q2/1PB5/8 w KQkq - 0 1";
+  int possible_moves_counts[8][8] = {
+    {1, 1, 1, 1, 0, 0, 0, 0},
+    {1, 0, 1, 1, 0, 0, 0, 0},
+    {1, 1, 1, 1, 0, 1, 0, 0},
+    {1, 1, 1, 0, 1, 0, 0, 1},
+    {1, 1, 0, 1, 2, 1, 1, 0},
+    {1, 3, 1, 3, 1, 0, 1, 1},
+    {0, 0, 0, 1, 1, 1, 1, 0},
+    {0, 1, 0, 3, 0, 1, 0, 1}
+  };
+
+  int blocked_moves_counts[8][8] = {
+    {0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 1, 0, 3, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0},
+    {0, 0, 0, 0, 0, 0, 0, 0}
+  };
+
+  auto cs = ChessState::ParseFEN(test_board);
+  cs->CreateMovesForBoard();
+  
+  for(int i = 0; i < ChessState::NUM_SQUARES; i++){
+    int row = i / 8;
+    int col = i % 8;
+    EXPECT_EQ(cs->possible_moves[i].size(), possible_moves_counts[row][col]);
+    EXPECT_EQ(cs->blocked_moves[i].size() , blocked_moves_counts[row][col]);
+  }
+}

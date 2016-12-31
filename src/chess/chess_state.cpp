@@ -82,18 +82,18 @@ void ChessState::CreateMovesForPiece(char index, char types){ // {{{
     if(   (*piece & attrs::DIAGONAL) == attrs::DIAGONAL 
        && (types & attrs::DIAGONAL ) == attrs::DIAGONAL
     ){
-      AddDeltaRange(deltas, index, deltas::D_UP_RIGHT  , 0, 0);
-      AddDeltaRange(deltas, index, deltas::D_UP_LEFT   , 7, 0);
-      AddDeltaRange(deltas, index, deltas::D_DOWN_RIGHT, 0, 7);
-      AddDeltaRange(deltas, index, deltas::D_DOWN_LEFT , 7, 7);
+      AddDeltaRange(deltas, index, deltas::D_UP_RIGHT  , 0, 7);
+      AddDeltaRange(deltas, index, deltas::D_UP_LEFT   , 7, 7);
+      AddDeltaRange(deltas, index, deltas::D_DOWN_RIGHT, 0, 0);
+      AddDeltaRange(deltas, index, deltas::D_DOWN_LEFT , 7, 0);
     }
     if(   (*piece & attrs::ADJACENT) == attrs::ADJACENT
        && (types & attrs::ADJACENT ) == attrs::ADJACENT
     ){
       AddDeltaRange(deltas, index, deltas::RIGHT,  0, -1);
       AddDeltaRange(deltas, index, deltas::LEFT ,  7, -1);
-      AddDeltaRange(deltas, index, deltas::UP   , -1,  0);
-      AddDeltaRange(deltas, index, deltas::DOWN , -1,  7);
+      AddDeltaRange(deltas, index, deltas::UP   , -1,  7);
+      AddDeltaRange(deltas, index, deltas::DOWN , -1,  0);
     }
   }
   AddPieceTrackerToDeltas(pt, deltas);
@@ -104,13 +104,13 @@ void ChessState::CreateMovesForPiece(char index){ // {{{
 } // }}}
 
 // TODO: test.
-void ChessState::AddDeltaRange(std::vector<char> & deltas, int index, int delta, int rowBound, int colBound){ // {{{
+void ChessState::AddDeltaRange(std::vector<char> & deltas, int index, int delta, int colBound, int rowBound){ // {{{
   char piece = board[index];
   bool isSliding = (piece & attrs::SLIDING) == attrs::SLIDING;
 
   for(int deltaTotal = delta;
-      (index + deltaTotal) % 8 != rowBound                  // Ensure we stay within row boundary.
-      && (index + deltaTotal) / 8 != colBound               // Ensure we stay within col boundary.
+      (index + deltaTotal) / 8 != rowBound                  // Ensure we stay within row boundary.
+      && (index + deltaTotal) % 8 != colBound               // Ensure we stay within col boundary.
       && (isSliding || index + deltaTotal == index + delta) // Continue running if piece slides. If not run once.
       && index + deltaTotal > -1                            // Don't go out of board's left bound.
       && index + deltaTotal < NUM_SQUARES;                  // Don't go out of board's right bound.
@@ -146,11 +146,11 @@ void ChessState::CreateMovesForBoard(){ // {{{
   CreateMovesForBoard(0b11111);
 } // }}}
 
-void ChessState::CreateMovesForBoard(char moveTypes){
+void ChessState::CreateMovesForBoard(char moveTypes){ //{{{
   for(int i = 0; i < NUM_SQUARES; i++){
     CreateMovesForPiece(i, moveTypes);
   }
-}
+} //}}}
 
 // Currently ignoring last four fields. Only accounts for current locations
 // and current turn.
@@ -162,6 +162,59 @@ GameState<ChessMove> * ChessState::GetStateFromFEN(std::string fen) { //{{{
 } // }}}
 
 ChessState * ChessState::ParseFEN(std::string fen){ // {{{
+  ChessState * cs  = new ChessState();
+  char current_field = 1;
+  char board_index = 0;
+  for(char &c : fen) {
+    if(c == ' ') {
+      current_field++;
+      continue;
+      // Pieces
+    } else if(current_field == 1) {
+      char unassigned_piece_id = std::tolower(c);
+      char piece;
+      switch (unassigned_piece_id) {
+	case 'p':
+	  piece = pieces::PAWN;
+	  break;
+	case 'n':
+	  piece = pieces::KNIGHT;
+	  break;
+	case 'b':
+	  piece = pieces::BISHOP;
+	  break;
+	case 'r':
+	  piece = pieces::ROOK;
+	  break;
+	case 'q':
+	  piece = pieces::QUEEN;
+	  break;
+	case 'k':
+	  piece = pieces::KING;
+	  break;
+	default:
+	  piece = pieces::NONE;
+	  if(c == '/'){
+	    continue;
+	  } else if(std::isdigit(c)){
+	    for(int i=0; i< c-'0'; i++){
+	      cs->board[board_index] = pieces::NONE;
+	      board_index++;
+	    }
+	    continue;
+	  }
+      }
+      if(std::islower(c))
+	cs->ownership[board_index] = player::BLACK;
+
+      cs->board[board_index] = piece;
+      board_index++;
+      // Current player
+    } else if(current_field == 2) {
+      cs->current_player = c == 'w' ? player::WHITE : player::BLACK;
+    }
+  }
+/*{{{
   ChessState * cs  = new ChessState();
   char current_field = 1;
   char piece_num     = 0;
@@ -215,6 +268,7 @@ ChessState * ChessState::ParseFEN(std::string fen){ // {{{
       cs->current_player = c == 'w' ? player::WHITE : player::BLACK;
     }
   }
+}}}*/
   return cs;
 } // }}}
 
