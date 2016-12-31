@@ -122,7 +122,6 @@ TEST(ChessState, BlockedMovesCorrectInInitialStateForDiagonals){ //{{{
      int row = i / 8;
      int col = i % 8;
      switch(row) {
-  ChessState::PrintState(cs, "pP");
        case 1: case 6:
          EXPECT_EQ(cs->blocked_moves[i].size(), pawn_row_counts[col]);  break;
        case 0: case 2: case 3: case 4: case 5: case 7:
