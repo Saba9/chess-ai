@@ -79,9 +79,9 @@ TEST(ChessState, PossibleMovesCorrectInInitialStateForPawns){ //{{{
   for(int i = 0; i < ChessState::NUM_SQUARES; i++){
     int row = i / 8;
     switch(row) {
-      case 0: case 1: case 3: case 4: case 6: case 7:
+      case 0: case 1: case 6: case 7:
         EXPECT_EQ(cs->possible_moves[i].size(), 0); break;
-      case 2: case 5:
+      case 2: case 3: case 4: case 5:
         EXPECT_EQ(cs->possible_moves[i].size(), 1); break;
       default:
         FAIL() << "We shouldn't be here.";

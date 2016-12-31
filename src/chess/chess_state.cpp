@@ -69,13 +69,19 @@ void ChessState::CreateMovesForPiece(char index, char types){ // {{{
   if(*piece == pieces::PAWN 
      && (types & pieces::PAWN) == pieces::PAWN
   ){
-    const int delta = ownership[index] == player::WHITE ? deltas::UP : deltas::DOWN;
+    int row = index / 8;
+    bool is_white_pawn = ownership[index] == player::WHITE;
+
+    const int delta = is_white_pawn ? deltas::UP : deltas::DOWN;
     deltas.push_back(delta);
+
+    if((row == 1 && !is_white_pawn) || (row == 6 && is_white_pawn)){
+      deltas.push_back(delta * 2);
+    }
   } else {
     if(   (*piece & attrs::DIAGONAL) == attrs::DIAGONAL 
        && (types & attrs::DIAGONAL ) == attrs::DIAGONAL
     ){
-      // TODO: Test this...
       AddDeltaRange(deltas, index, deltas::D_UP_RIGHT  , 0, 0);
       AddDeltaRange(deltas, index, deltas::D_UP_LEFT   , 7, 0);
       AddDeltaRange(deltas, index, deltas::D_DOWN_RIGHT, 0, 7);
