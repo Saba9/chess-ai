@@ -40,8 +40,8 @@ namespace deltas {
   };
 }
 
-namespace rook_move {
-  enum rook_move : unsigned char {
+namespace knight_move {
+  enum knight_move : unsigned char {
     L_UPMOST_RIGHT    = 0b00000001,
     L_UP_RIGHT        = 0b00000010,
     L_UPMOST_LEFT     = 0b00000100,

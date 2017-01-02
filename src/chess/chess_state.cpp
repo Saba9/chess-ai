@@ -6,6 +6,17 @@
 #include <assert.h>
 #include <bitset>
 
+ChessBoard * ChessState::knight_moves;
+
+ChessState::ChessState(){ // {{{
+  if(knight_moves == nullptr){
+    knight_moves = new ChessBoard;
+    for(int i = 0; i < NUM_SQUARES; i++){
+      (*knight_moves)[i] = potential_moves_for_knight(i);
+    }
+  }
+} // }}}
+
 ChessState::~ChessState() { // {{{
   for(auto tracker_collection : trackers){
     for(auto tracker : tracker_collection){
@@ -75,8 +86,35 @@ void ChessState::CreateMovesForPiece(char index, char types){ // {{{
     const int delta = is_white_pawn ? deltas::UP : deltas::DOWN;
     deltas.push_back(delta);
 
+    // if the pawn is at its original position it can move up two squares.
     if((row == 1 && !is_white_pawn) || (row == 6 && is_white_pawn)){
       deltas.push_back(delta * 2);
+    }
+  } else if(*piece == pieces::KNIGHT && (types & pieces::KNIGHT) == pieces::KNIGHT) {
+    using namespace knight_move;
+    if(((*knight_moves)[index] & L_UPMOST_RIGHT)    == L_UPMOST_RIGHT){
+      deltas.push_back(deltas::L_UPMOST_RIGHT);
+    }
+    if(((*knight_moves)[index] & L_UP_RIGHT)        == L_UP_RIGHT){
+      deltas.push_back(deltas::L_UP_RIGHT);
+    }
+    if(((*knight_moves)[index] & L_UPMOST_LEFT)     == L_UPMOST_LEFT){
+      deltas.push_back(deltas::L_UPMOST_LEFT);
+    }
+    if(((*knight_moves)[index] & L_UP_LEFT)         == L_UP_LEFT){
+      deltas.push_back(deltas::L_UP_LEFT);
+    }
+    if(((*knight_moves)[index] & L_DOWNMOST_RIGHT)  == L_DOWNMOST_RIGHT){
+      deltas.push_back(deltas::L_DOWNMOST_RIGHT);
+    }
+    if(((*knight_moves)[index] & L_DOWN_RIGHT)      == L_DOWN_RIGHT){
+      deltas.push_back(deltas::L_DOWN_RIGHT);
+    }
+    if(((*knight_moves)[index] & L_DOWNMOST_LEFT)   == L_DOWNMOST_LEFT){
+      deltas.push_back(deltas::L_DOWNMOST_LEFT);
+    }
+    if(((*knight_moves)[index] & L_DOWN_LEFT)       == L_DOWN_LEFT){
+      deltas.push_back(deltas::L_DOWN_LEFT);
     }
   } else {
     if(   (*piece & attrs::DIAGONAL) == attrs::DIAGONAL 
@@ -311,45 +349,45 @@ std::string ChessState::index_to_square(char index){ // {{{
 } // }}}
 
 // TODO: Needs to be tested. Never been executed...
-char potential_moves_for_rook(char index){ // {{{
+char ChessState::potential_moves_for_knight(char index){ // {{{
   char row = index / 8;
   char col = index % 8;
   unsigned char moves = 0b11111111;
 
   if(row == 0){
-    moves &= ~rook_move::L_UPMOST_RIGHT;
-    moves &= ~rook_move::L_UP_RIGHT;
-    moves &= ~rook_move::L_UPMOST_LEFT;
-    moves &= ~rook_move::L_UP_LEFT;
+    moves &= ~knight_move::L_UPMOST_RIGHT;
+    moves &= ~knight_move::L_UP_RIGHT;
+    moves &= ~knight_move::L_UPMOST_LEFT;
+    moves &= ~knight_move::L_UP_LEFT;
   } else if(row == 1){
-    moves &= ~rook_move::L_UPMOST_RIGHT;
-    moves &= ~rook_move::L_UPMOST_LEFT;
+    moves &= ~knight_move::L_UPMOST_RIGHT;
+    moves &= ~knight_move::L_UPMOST_LEFT;
   } else if(row == 7){
-    moves &= ~rook_move::L_DOWNMOST_RIGHT;
-    moves &= ~rook_move::L_DOWN_RIGHT;
-    moves &= ~rook_move::L_DOWNMOST_LEFT;
-    moves &= ~rook_move::L_DOWN_LEFT;
+    moves &= ~knight_move::L_DOWNMOST_RIGHT;
+    moves &= ~knight_move::L_DOWN_RIGHT;
+    moves &= ~knight_move::L_DOWNMOST_LEFT;
+    moves &= ~knight_move::L_DOWN_LEFT;
   } else if(row == 6){
-    moves &= ~rook_move::L_DOWNMOST_RIGHT;
-    moves &= ~rook_move::L_DOWNMOST_LEFT;
+    moves &= ~knight_move::L_DOWNMOST_RIGHT;
+    moves &= ~knight_move::L_DOWNMOST_LEFT;
   }
 
   if(col == 0){
-    moves &= ~rook_move::L_UPMOST_LEFT;
-    moves &= ~rook_move::L_UP_LEFT;
-    moves &= ~rook_move::L_DOWNMOST_LEFT;
-    moves &= ~rook_move::L_DOWN_LEFT;
+    moves &= ~knight_move::L_UPMOST_LEFT;
+    moves &= ~knight_move::L_UP_LEFT;
+    moves &= ~knight_move::L_DOWNMOST_LEFT;
+    moves &= ~knight_move::L_DOWN_LEFT;
   } else if(col == 1){
-    moves &= ~rook_move::L_UP_LEFT;
-    moves &= ~rook_move::L_DOWN_LEFT;
+    moves &= ~knight_move::L_UP_LEFT;
+    moves &= ~knight_move::L_DOWN_LEFT;
   } else if(col == 7){
-    moves &= ~rook_move::L_UPMOST_RIGHT;
-    moves &= ~rook_move::L_UP_RIGHT;
-    moves &= ~rook_move::L_DOWNMOST_RIGHT;
-    moves &= ~rook_move::L_DOWN_RIGHT;
+    moves &= ~knight_move::L_UPMOST_RIGHT;
+    moves &= ~knight_move::L_UP_RIGHT;
+    moves &= ~knight_move::L_DOWNMOST_RIGHT;
+    moves &= ~knight_move::L_DOWN_RIGHT;
   } else if(col == 6){
-    moves &= ~rook_move::L_UP_RIGHT;
-    moves &= ~rook_move::L_DOWN_RIGHT;
+    moves &= ~knight_move::L_UP_RIGHT;
+    moves &= ~knight_move::L_DOWN_RIGHT;
   }
 
   return moves;

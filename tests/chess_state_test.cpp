@@ -132,6 +132,38 @@ TEST(ChessState, BlockedMovesCorrectInInitialStateForDiagonals){ //{{{
    }
 }///}}}
 
+TEST(ChessState, BlockedAndPossibleMovesCorrectInInitialStateForKnights){
+  auto cs = ChessState::ParseFEN(fen::starting);
+  cs->CreateMovesForBoard(pieces::KNIGHT);
+  
+  int possible_move_counts[64] = {
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    1, 0, 1, 0, 0, 1, 0, 1,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    1, 0, 1, 0, 0, 1, 0, 1,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0
+  };
+
+  int blocked_move_counts[64] = {
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 1, 1, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 1, 1, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0
+  };
+
+  for(int i = 0; i < ChessState::NUM_SQUARES; i++){
+    EXPECT_EQ(cs->possible_moves[i].size(), possible_move_counts[i]);
+    EXPECT_EQ(cs->blocked_moves[i].size(), blocked_move_counts[i]);
+  }
+}
+
 TEST(ChessState, MovesCalculatedCorrectlyForLoneQueen){
   const std::string test_board = "8/8/2Q5/8/8/8/8/8 w KQkq - 0 1";
   int possible_moves_counts[8][8] = {
@@ -188,5 +220,27 @@ TEST(ChessState, MovesCalculatedCorrectlyWhenBlocked){
     int col = i % 8;
     EXPECT_EQ(cs->possible_moves[i].size(), possible_moves_counts[row][col]);
     EXPECT_EQ(cs->blocked_moves[i].size() , blocked_moves_counts[row][col]);
+  }
+}
+
+TEST(ChessState, MovesCalculatedCorrectlyForMultipleRooks){
+  const std::string test_board = "8/1n6/5n2/8/8/2n5/6n1/8 w";
+  int possible_move_counts[64] = {
+    0, 0, 0, 1, 1, 0, 1, 0,
+    0, 0, 0, 1, 0, 0, 0, 1,
+    0, 0, 0, 1, 0, 0, 0, 0,
+    1, 1, 1, 2, 0, 0, 0, 1,
+    1, 0, 0, 0, 2, 1, 1, 1,
+    0, 0, 0, 0, 1, 0, 0, 0,
+    1, 0, 0, 0, 1, 0, 0, 0,
+    0, 1, 0, 1, 1, 0, 0, 0
+  };
+
+  auto cs = ChessState::ParseFEN(test_board);
+  cs->CreateMovesForBoard();
+
+  for(int i = 0; i < ChessState::NUM_SQUARES; i++){
+    EXPECT_EQ(cs->possible_moves[i].size(), possible_move_counts[i]);
+    EXPECT_EQ(cs->blocked_moves[i].size(), 0);
   }
 }
