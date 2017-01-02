@@ -77,11 +77,10 @@ void ChessState::CreateMovesForPiece(char index, char types){ // {{{
   auto pt = &trackers[index].front();
 
   std::vector<char> deltas;
-  if(*piece == pieces::PAWN 
-     && (types & pieces::PAWN) == pieces::PAWN
-  ){
+  if(*piece == pieces::PAWN && (types & pieces::PAWN) == pieces::PAWN){ // {{{
     int row = index / 8;
     bool is_white_pawn = ownership[index] == player::WHITE;
+    char delta_mult = is_white_pawn ? 1 : -1;
 
     const int delta = is_white_pawn ? deltas::UP : deltas::DOWN;
     deltas.push_back(delta);
@@ -90,7 +89,56 @@ void ChessState::CreateMovesForPiece(char index, char types){ // {{{
     if((row == 1 && !is_white_pawn) || (row == 6 && is_white_pawn)){
       deltas.push_back(delta * 2);
     }
-  } else if(*piece == pieces::KNIGHT && (types & pieces::KNIGHT) == pieces::KNIGHT) {
+    // if there's a piece to capture add it to deltas.
+    char capture_deltas[2];
+    char col_row_bounds[2][2];
+
+    if(is_white_pawn){
+      capture_deltas[0] = deltas::D_UP_RIGHT;
+      capture_deltas[1] = deltas::D_UP_LEFT;
+      col_row_bounds[0][0] = 0;
+      col_row_bounds[0][1] = 7;
+      col_row_bounds[1][0] = 7;
+      col_row_bounds[1][1] = 7;
+    } else {
+      capture_deltas[0] = deltas::D_DOWN_RIGHT;
+      capture_deltas[1] = deltas::D_DOWN_LEFT;
+      col_row_bounds[0][0] = 0;
+      col_row_bounds[0][1] = 0;
+      col_row_bounds[1][0] = 7;
+      col_row_bounds[1][1] = 0;
+    }
+    
+    for(int i = 0; i < 2; i++){
+      char capture_index = index + capture_deltas[i];
+      if(in_bounds(capture_index)
+          && board[capture_index] != pieces::NONE
+          && ownership[index] != ownership[capture_index]){
+        AddDeltaRange(deltas, index, capture_deltas[i], col_row_bounds[i][0], col_row_bounds[i][1]);
+      }
+    }
+    /*{{{
+    if(is_white_pawn){
+      if(in_bounds(index + deltas::D_UP_RIGHT)
+          && board[index + deltas::D_UP_RIGHT] != pieces::NONE){
+        AddDeltaRange(deltas, index, deltas::D_UP_RIGHT, 0, 7);
+      }
+      if(in_bounds(index + deltas::D_UP_LEFT)
+          && board[index + deltas::D_UP_LEFT] != pieces::NONE){
+        AddDeltaRange(deltas, index, deltas::D_UP_LEFT, 7, 7);
+      }
+    } else {
+      if(in_bounds(index + deltas::D_DOWN_RIGHT)
+          && board[index + deltas::D_DOWN_RIGHT] != pieces::NONE){
+        AddDeltaRange(deltas, index, deltas::D_DOWN_RIGHT, 0, 0);
+      }
+      if(in_bounds(index + deltas::D_DOWN_LEFT)
+          && board[index + deltas::D_DOWN_LEFT] != pieces::NONE){
+        AddDeltaRange(deltas, index, deltas::D_DOWN_LEFT, 7, 0);
+      }
+    }}}}*/
+    //}}}
+  } else if(*piece == pieces::KNIGHT && (types & pieces::KNIGHT) == pieces::KNIGHT) { //{{{
     using namespace knight_move;
     if(((*knight_moves)[index] & L_UPMOST_RIGHT)    == L_UPMOST_RIGHT){
       deltas.push_back(deltas::L_UPMOST_RIGHT);
@@ -116,18 +164,17 @@ void ChessState::CreateMovesForPiece(char index, char types){ // {{{
     if(((*knight_moves)[index] & L_DOWN_LEFT)       == L_DOWN_LEFT){
       deltas.push_back(deltas::L_DOWN_LEFT);
     }
+    // }}}
   } else {
-    if(   (*piece & attrs::DIAGONAL) == attrs::DIAGONAL 
-       && (types & attrs::DIAGONAL ) == attrs::DIAGONAL
-    ){
+    if((*piece & attrs::DIAGONAL) == attrs::DIAGONAL 
+       && (types & attrs::DIAGONAL ) == attrs::DIAGONAL){
       AddDeltaRange(deltas, index, deltas::D_UP_RIGHT  , 0, 7);
       AddDeltaRange(deltas, index, deltas::D_UP_LEFT   , 7, 7);
       AddDeltaRange(deltas, index, deltas::D_DOWN_RIGHT, 0, 0);
       AddDeltaRange(deltas, index, deltas::D_DOWN_LEFT , 7, 0);
     }
-    if(   (*piece & attrs::ADJACENT) == attrs::ADJACENT
-       && (types & attrs::ADJACENT ) == attrs::ADJACENT
-    ){
+    if((*piece & attrs::ADJACENT) == attrs::ADJACENT
+       && (types & attrs::ADJACENT ) == attrs::ADJACENT){
       AddDeltaRange(deltas, index, deltas::RIGHT,  0, -1);
       AddDeltaRange(deltas, index, deltas::LEFT ,  7, -1);
       AddDeltaRange(deltas, index, deltas::UP   , -1,  7);
@@ -168,8 +215,10 @@ void ChessState::AddPieceTrackerToDeltas(SharedPieceTracker * pt, const std::vec
   const char index = (*pt)->index;
   for(int delta : deltas){
     const int move_pos = index + delta;
-    // There's a piece located at delta. Add move to blocked_moves.
-    if(board[move_pos]){
+    // There's a piece located at delta. Add move to blocked_moves if
+    // the pieces are owned by the same player, else add to possible moves
+    // because it's a capture move.
+    if(board[move_pos] && (ownership[index] == ownership[move_pos])){
       blocked_moves[move_pos].push_back(pt);
     // Square is clear. Add to possible moves.
     } else {
@@ -392,6 +441,10 @@ char ChessState::potential_moves_for_knight(char index){ // {{{
 
   return moves;
 } // }}}
+
+bool ChessState::in_bounds(char index){
+  return index < NUM_SQUARES && index > -1;
+}
 
 // Prints some information about chess state depending on attrs passed in.
 void ChessState::PrintState(ChessState * cs, std::string attrs){ // {{{

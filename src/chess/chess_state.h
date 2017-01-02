@@ -48,6 +48,8 @@ class ChessState : public GameState<ChessMove> {
   private:
     static ChessBoard * knight_moves;
 
+    static bool in_bounds(char);
+
     void CreateMovesForPiece(char, char);
     void CreateMovesForPiece(char);
 

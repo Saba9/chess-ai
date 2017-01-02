@@ -244,3 +244,25 @@ TEST(ChessState, MovesCalculatedCorrectlyForMultipleRooks){
     EXPECT_EQ(cs->blocked_moves[i].size(), 0);
   }
 }
+
+TEST(ChessState, PawnCapturesCalculated){
+  const std::string test_board = "8/8/8/8/4p3/3P4/2P5/8";
+  int possible_move_counts[64] = {
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 1, 1, 1, 0, 0, 0,
+    0, 0, 1, 1, 1, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0
+  };
+  
+  auto cs = ChessState::ParseFEN(test_board);
+  cs->CreateMovesForBoard();
+
+  for(int i = 0; i < ChessState::NUM_SQUARES; i++){
+    EXPECT_EQ(cs->possible_moves[i].size(), possible_move_counts[i]) << i;
+    EXPECT_EQ(cs->blocked_moves[i].size(), 0);
+  }
+}
